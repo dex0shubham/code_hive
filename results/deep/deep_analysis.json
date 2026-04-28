@@ -1,0 +1,1538 @@
+{
+  "category_metrics": {
+    "Open Design": {
+      "ast": 0.27872255182911604,
+      "naming": 0.22786418710968775,
+      "ngram": 0.18701692922823596,
+      "import_match": 0.4380952380952381,
+      "pattern_jac": 0.3218745275888133
+    },
+    "Algorithm": {
+      "ast": 0.4020472107909844,
+      "naming": 0.27274573235489674,
+      "ngram": 0.21641819205319301,
+      "import_match": 0.5904761904761905,
+      "pattern_jac": 0.32698412698412693
+    },
+    "Refactor": {
+      "ast": 0.33805181224393166,
+      "naming": 0.2645262721881589,
+      "ngram": 0.21535264525011977,
+      "import_match": 0.5619047619047619,
+      "pattern_jac": 0.3124263038548753
+    },
+    "Naming": {
+      "ast": 0.3090594981741513,
+      "naming": 0.22359675446144803,
+      "ngram": 0.18928832229362713,
+      "import_match": 0.2571428571428571,
+      "pattern_jac": 0.32458049886621315
+    },
+    "Creative": {
+      "ast": 0.23135730317235842,
+      "naming": 0.17495119874383988,
+      "ngram": 0.16487052929093332,
+      "import_match": 0.4,
+      "pattern_jac": 0.26430839002267575
+    },
+    "System Design": {
+      "ast": 0.2176230839021164,
+      "naming": 0.18656234668941798,
+      "ngram": 0.1720018397425351,
+      "import_match": 0.4,
+      "pattern_jac": 0.2769538926681784
+    }
+  },
+  "pair_data": {
+    "Claude 3.5 Haiku___Claude Sonnet 4": {
+      "ast": 0.014836046536929179,
+      "naming": 0.0,
+      "import_match": 0.5666666666666667,
+      "pattern_jac": 0.0
+    },
+    "Claude 3.5 Haiku___GPT-4o": {
+      "ast": 0.03252395301152315,
+      "naming": 0.0,
+      "import_match": 0.23333333333333334,
+      "pattern_jac": 0.0
+    },
+    "Claude 3.5 Haiku___GPT-4o-mini": {
+      "ast": 0.02974056963630482,
+      "naming": 0.0,
+      "import_match": 0.3,
+      "pattern_jac": 0.0
+    },
+    "Claude 3.5 Haiku___Gemini 2.5 Flash": {
+      "ast": 1.0,
+      "naming": 1.0,
+      "import_match": 1.0,
+      "pattern_jac": 1.0
+    },
+    "Claude 3.5 Haiku___Gemini 2.5 Pro": {
+      "ast": 1.0,
+      "naming": 1.0,
+      "import_match": 1.0,
+      "pattern_jac": 1.0
+    },
+    "Claude 3.5 Haiku___o3-mini": {
+      "ast": 0.059269316677090435,
+      "naming": 0.03333333333333333,
+      "import_match": 0.3,
+      "pattern_jac": 0.03333333333333333
+    },
+    "Claude Sonnet 4___GPT-4o": {
+      "ast": 0.35117031225569983,
+      "naming": 0.19049079147233658,
+      "import_match": 0.23333333333333334,
+      "pattern_jac": 0.42304232804232805
+    },
+    "Claude Sonnet 4___GPT-4o-mini": {
+      "ast": 0.34865473853572376,
+      "naming": 0.23052637463291684,
+      "import_match": 0.3,
+      "pattern_jac": 0.459074074074074
+    },
+    "Claude Sonnet 4___Gemini 2.5 Flash": {
+      "ast": 0.014836046536929179,
+      "naming": 0.0,
+      "import_match": 0.5666666666666667,
+      "pattern_jac": 0.0
+    },
+    "Claude Sonnet 4___Gemini 2.5 Pro": {
+      "ast": 0.014836046536929179,
+      "naming": 0.0,
+      "import_match": 0.5666666666666667,
+      "pattern_jac": 0.0
+    },
+    "Claude Sonnet 4___o3-mini": {
+      "ast": 0.33305427118318504,
+      "naming": 0.2020490189705288,
+      "import_match": 0.3333333333333333,
+      "pattern_jac": 0.4511640211640212
+    },
+    "GPT-4o___GPT-4o-mini": {
+      "ast": 0.6685928069714431,
+      "naming": 0.4330508189148629,
+      "import_match": 0.4666666666666667,
+      "pattern_jac": 0.7260317460317459
+    },
+    "GPT-4o___Gemini 2.5 Flash": {
+      "ast": 0.03252395301152315,
+      "naming": 0.0,
+      "import_match": 0.23333333333333334,
+      "pattern_jac": 0.0
+    },
+    "GPT-4o___Gemini 2.5 Pro": {
+      "ast": 0.03252395301152315,
+      "naming": 0.0,
+      "import_match": 0.23333333333333334,
+      "pattern_jac": 0.0
+    },
+    "GPT-4o___o3-mini": {
+      "ast": 0.578519567839055,
+      "naming": 0.28200486353518833,
+      "import_match": 0.36666666666666664,
+      "pattern_jac": 0.6341666666666668
+    },
+    "GPT-4o-mini___Gemini 2.5 Flash": {
+      "ast": 0.02974056963630482,
+      "naming": 0.0,
+      "import_match": 0.3,
+      "pattern_jac": 0.0
+    },
+    "GPT-4o-mini___Gemini 2.5 Pro": {
+      "ast": 0.02974056963630482,
+      "naming": 0.0,
+      "import_match": 0.3,
+      "pattern_jac": 0.0
+    },
+    "GPT-4o-mini___o3-mini": {
+      "ast": 0.5299137560236546,
+      "naming": 0.28774085289023904,
+      "import_match": 0.36666666666666664,
+      "pattern_jac": 0.601468253968254
+    },
+    "Gemini 2.5 Flash___Gemini 2.5 Pro": {
+      "ast": 1.0,
+      "naming": 1.0,
+      "import_match": 1.0,
+      "pattern_jac": 1.0
+    },
+    "Gemini 2.5 Flash___o3-mini": {
+      "ast": 0.059269316677090435,
+      "naming": 0.03333333333333333,
+      "import_match": 0.3,
+      "pattern_jac": 0.03333333333333333
+    },
+    "Gemini 2.5 Pro___o3-mini": {
+      "ast": 0.059269316677090435,
+      "naming": 0.03333333333333333,
+      "import_match": 0.3,
+      "pattern_jac": 0.03333333333333333
+    }
+  },
+  "pattern_convergence": [
+    {
+      "prompt_id": "OD-01",
+      "category": "Open Design",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "class-based",
+        "context-mgr",
+        "list-comp"
+      ]
+    },
+    {
+      "prompt_id": "OD-02",
+      "category": "Open Design",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "OD-03",
+      "category": "Open Design",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "class-based",
+        "context-mgr",
+        "decorators",
+        "error-handling",
+        "list-comp"
+      ]
+    },
+    {
+      "prompt_id": "OD-04",
+      "category": "Open Design",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "OD-05",
+      "category": "Open Design",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "AL-01",
+      "category": "Algorithm",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "AL-02",
+      "category": "Algorithm",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "AL-03",
+      "category": "Algorithm",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "AL-04",
+      "category": "Algorithm",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "functional"
+      ]
+    },
+    {
+      "prompt_id": "AL-05",
+      "category": "Algorithm",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "RF-01",
+      "category": "Refactor",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "functional",
+        "list-comp"
+      ]
+    },
+    {
+      "prompt_id": "RF-02",
+      "category": "Refactor",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "async"
+      ]
+    },
+    {
+      "prompt_id": "RF-03",
+      "category": "Refactor",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "RF-04",
+      "category": "Refactor",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "RF-05",
+      "category": "Refactor",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "NM-01",
+      "category": "Naming",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "NM-02",
+      "category": "Naming",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "NM-03",
+      "category": "Naming",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    },
+    {
+      "prompt_id": "NM-04",
+      "category": "Naming",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": [
+        "class-based",
+        "logging"
+      ]
+    },
+    {
+      "prompt_id": "NM-05",
+      "category": "Naming",
+      "n_models": 7,
+      "dominant_count": 3,
+      "convergence_rate": 0.42857142857142855,
+      "dominant_patterns": []
+    }
+  ],
+  "universal_libraries": [],
+  "code_characteristics": [
+    {
+      "prompt_id": "OD-01",
+      "category": "Open Design",
+      "mean_lines": 30.392857142857142,
+      "std_lines": 29.773357320303152,
+      "unique_class_names": 3,
+      "top_class_names": [
+        [
+          "ExpiringCache",
+          12
+        ],
+        [
+          "InMemoryCache",
+          4
+        ],
+        [
+          "CacheEntry",
+          4
+        ]
+      ],
+      "unique_func_names": 14,
+      "top_func_names": [
+        [
+          "__init__",
+          17
+        ],
+        [
+          "set",
+          16
+        ],
+        [
+          "get",
+          16
+        ],
+        [
+          "cleanup",
+          16
+        ],
+        [
+          "clear",
+          5
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "OD-02",
+      "category": "Open Design",
+      "mean_lines": 45.785714285714285,
+      "std_lines": 52.24281026600499,
+      "unique_class_names": 3,
+      "top_class_names": [
+        [
+          "TaskQueue",
+          15
+        ],
+        [
+          "Task",
+          11
+        ],
+        [
+          "TaskStatus",
+          3
+        ]
+      ],
+      "unique_func_names": 32,
+      "top_func_names": [
+        [
+          "__init__",
+          22
+        ],
+        [
+          "add_task",
+          15
+        ],
+        [
+          "__lt__",
+          9
+        ],
+        [
+          "sample_task",
+          7
+        ],
+        [
+          "execute",
+          6
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "OD-03",
+      "category": "Open Design",
+      "mean_lines": 52.285714285714285,
+      "std_lines": 54.74281240678161,
+      "unique_class_names": 10,
+      "top_class_names": [
+        [
+          "RateLimiter",
+          12
+        ],
+        [
+          "RateLimitExceeded",
+          6
+        ],
+        [
+          "RateLimitException",
+          4
+        ],
+        [
+          "RateLimitStrategy",
+          3
+        ],
+        [
+          "FixedWindowStrategy",
+          3
+        ]
+      ],
+      "unique_func_names": 44,
+      "top_func_names": [
+        [
+          "__init__",
+          24
+        ],
+        [
+          "is_allowed",
+          16
+        ],
+        [
+          "wrapper",
+          16
+        ],
+        [
+          "reset",
+          11
+        ],
+        [
+          "__call__",
+          9
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "OD-04",
+      "category": "Open Design",
+      "mean_lines": 59.75,
+      "std_lines": 65.88389408649128,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 0,
+      "top_func_names": [],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "OD-05",
+      "category": "Open Design",
+      "mean_lines": 47.67857142857143,
+      "std_lines": 53.03573833573289,
+      "unique_class_names": 3,
+      "top_class_names": [
+        [
+          "KeyValueStore",
+          12
+        ],
+        [
+          "PersistentKeyValueStore",
+          4
+        ],
+        [
+          "RWLock",
+          3
+        ]
+      ],
+      "unique_func_names": 39,
+      "top_func_names": [
+        [
+          "__init__",
+          19
+        ],
+        [
+          "get",
+          16
+        ],
+        [
+          "delete",
+          16
+        ],
+        [
+          "keys",
+          14
+        ],
+        [
+          "set",
+          12
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "AL-01",
+      "category": "Algorithm",
+      "mean_lines": 11.035714285714286,
+      "std_lines": 10.217219858290859,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 1,
+      "top_func_names": [
+        [
+          "find_anagram_groups",
+          16
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "AL-02",
+      "category": "Algorithm",
+      "mean_lines": 31.892857142857142,
+      "std_lines": 42.47716973833817,
+      "unique_class_names": 7,
+      "top_class_names": [
+        [
+          "FrequentElementsStream",
+          4
+        ],
+        [
+          "FrequentElements",
+          3
+        ],
+        [
+          "StreamFrequencyTracker",
+          2
+        ],
+        [
+          "StreamProcessor",
+          1
+        ],
+        [
+          "MemoryOptimizedStreamTracker",
+          1
+        ]
+      ],
+      "unique_func_names": 25,
+      "top_func_names": [
+        [
+          "__init__",
+          13
+        ],
+        [
+          "add",
+          8
+        ],
+        [
+          "get_top_k",
+          7
+        ],
+        [
+          "add_element",
+          5
+        ],
+        [
+          "top_k_frequent",
+          4
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "AL-03",
+      "category": "Algorithm",
+      "mean_lines": 25.107142857142858,
+      "std_lines": 24.453073551650903,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 6,
+      "top_func_names": [
+        [
+          "dfs",
+          12
+        ],
+        [
+          "visit",
+          8
+        ],
+        [
+          "has_cycle",
+          8
+        ],
+        [
+          "detect_cycle_in_directed_graph",
+          4
+        ],
+        [
+          "detect_cycle",
+          4
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "AL-04",
+      "category": "Algorithm",
+      "mean_lines": 26.857142857142858,
+      "std_lines": 36.588165812883,
+      "unique_class_names": 2,
+      "top_class_names": [
+        [
+          "TextSimilarity",
+          2
+        ],
+        [
+          "TextSimilarityCalculator",
+          2
+        ]
+      ],
+      "unique_func_names": 17,
+      "top_func_names": [
+        [
+          "text_similarity",
+          7
+        ],
+        [
+          "compute_text_similarity",
+          5
+        ],
+        [
+          "__init__",
+          4
+        ],
+        [
+          "preprocess_text",
+          4
+        ],
+        [
+          "calculate_text_similarity",
+          3
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "AL-05",
+      "category": "Algorithm",
+      "mean_lines": 10.464285714285714,
+      "std_lines": 9.409274083345121,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 2,
+      "top_func_names": [
+        [
+          "generate_parentheses",
+          16
+        ],
+        [
+          "backtrack",
+          16
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "RF-01",
+      "category": "Refactor",
+      "mean_lines": 12.571428571428571,
+      "std_lines": 11.89065831239132,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 8,
+      "top_func_names": [
+        [
+          "process_data",
+          16
+        ],
+        [
+          "assign_grade",
+          9
+        ],
+        [
+          "transform_entry",
+          8
+        ],
+        [
+          "calculate_grade",
+          4
+        ],
+        [
+          "process_record",
+          2
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "RF-02",
+      "category": "Refactor",
+      "mean_lines": 17.428571428571427,
+      "std_lines": 17.702761228182478,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 0,
+      "top_func_names": [],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "RF-03",
+      "category": "Refactor",
+      "mean_lines": 17.142857142857142,
+      "std_lines": 17.981566525024387,
+      "unique_class_names": 5,
+      "top_class_names": [
+        [
+          "EmailParts",
+          3
+        ],
+        [
+          "ValidationResult",
+          2
+        ],
+        [
+          "EmailValidationResult",
+          2
+        ],
+        [
+          "ParsedEmail",
+          1
+        ],
+        [
+          "EmailValidator",
+          1
+        ]
+      ],
+      "unique_func_names": 3,
+      "top_func_names": [
+        [
+          "validate_and_parse_email_list",
+          16
+        ],
+        [
+          "is_valid_email",
+          1
+        ],
+        [
+          "parse_email",
+          1
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "RF-04",
+      "category": "Refactor",
+      "mean_lines": 38.67857142857143,
+      "std_lines": 46.04815303526499,
+      "unique_class_names": 2,
+      "top_class_names": [
+        [
+          "RetryError",
+          4
+        ],
+        [
+          "ExampleError",
+          1
+        ]
+      ],
+      "unique_func_names": 17,
+      "top_func_names": [
+        [
+          "retry",
+          16
+        ],
+        [
+          "wrapper",
+          10
+        ],
+        [
+          "decorator",
+          5
+        ],
+        [
+          "__init__",
+          4
+        ],
+        [
+          "unreliable_function",
+          3
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "RF-05",
+      "category": "Refactor",
+      "mean_lines": 40.285714285714285,
+      "std_lines": 41.26383503302442,
+      "unique_class_names": 18,
+      "top_class_names": [
+        [
+          "ShippingCalculator",
+          10
+        ],
+        [
+          "Destination",
+          4
+        ],
+        [
+          "ShippingModifier",
+          3
+        ],
+        [
+          "ShippingRateCalculator",
+          3
+        ],
+        [
+          "ShippingRequest",
+          3
+        ]
+      ],
+      "unique_func_names": 44,
+      "top_func_names": [
+        [
+          "__init__",
+          14
+        ],
+        [
+          "calculate_shipping",
+          14
+        ],
+        [
+          "calculate_base_cost",
+          12
+        ],
+        [
+          "_calculate_base_cost",
+          9
+        ],
+        [
+          "calculate",
+          8
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "NM-01",
+      "category": "Naming",
+      "mean_lines": 28.071428571428573,
+      "std_lines": 28.544362179682665,
+      "unique_class_names": 5,
+      "top_class_names": [
+        [
+          "Deck",
+          16
+        ],
+        [
+          "Card",
+          15
+        ],
+        [
+          "Suit",
+          4
+        ],
+        [
+          "Rank",
+          4
+        ],
+        [
+          "PlayingCard",
+          1
+        ]
+      ],
+      "unique_func_names": 17,
+      "top_func_names": [
+        [
+          "__init__",
+          36
+        ],
+        [
+          "__repr__",
+          29
+        ],
+        [
+          "shuffle",
+          16
+        ],
+        [
+          "draw",
+          16
+        ],
+        [
+          "is_empty",
+          16
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "NM-02",
+      "category": "Naming",
+      "mean_lines": 64.57142857142857,
+      "std_lines": 69.3069923144373,
+      "unique_class_names": 2,
+      "top_class_names": [
+        [
+          "DateHelpers",
+          3
+        ],
+        [
+          "DateHelper",
+          1
+        ]
+      ],
+      "unique_func_names": 15,
+      "top_func_names": [
+        [
+          "parse_date",
+          12
+        ],
+        [
+          "format_date",
+          8
+        ],
+        [
+          "business_days_between",
+          7
+        ],
+        [
+          "calculate_date_difference",
+          5
+        ],
+        [
+          "is_business_day",
+          5
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "NM-03",
+      "category": "Naming",
+      "mean_lines": 39.07142857142857,
+      "std_lines": 42.53479967830423,
+      "unique_class_names": 2,
+      "top_class_names": [
+        [
+          "HttpResponse",
+          10
+        ],
+        [
+          "HTTPResponse",
+          6
+        ]
+      ],
+      "unique_func_names": 28,
+      "top_func_names": [
+        [
+          "__init__",
+          16
+        ],
+        [
+          "is_success",
+          15
+        ],
+        [
+          "pretty_print",
+          15
+        ],
+        [
+          "parse_json",
+          10
+        ],
+        [
+          "json",
+          6
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "NM-04",
+      "category": "Naming",
+      "mean_lines": 46.17857142857143,
+      "std_lines": 54.614920496292264,
+      "unique_class_names": 8,
+      "top_class_names": [
+        [
+          "Logger",
+          9
+        ],
+        [
+          "SimpleLogger",
+          6
+        ],
+        [
+          "LogLevel",
+          6
+        ],
+        [
+          "LogFormatter",
+          3
+        ],
+        [
+          "LoggerManager",
+          2
+        ]
+      ],
+      "unique_func_names": 34,
+      "top_func_names": [
+        [
+          "__init__",
+          22
+        ],
+        [
+          "debug",
+          15
+        ],
+        [
+          "info",
+          15
+        ],
+        [
+          "error",
+          15
+        ],
+        [
+          "warning",
+          14
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "NM-05",
+      "category": "Naming",
+      "mean_lines": 55.714285714285715,
+      "std_lines": 66.21709810640039,
+      "unique_class_names": 2,
+      "top_class_names": [
+        [
+          "ConfigurationManager",
+          9
+        ],
+        [
+          "ConfigManager",
+          1
+        ]
+      ],
+      "unique_func_names": 27,
+      "top_func_names": [
+        [
+          "__init__",
+          10
+        ],
+        [
+          "get",
+          10
+        ],
+        [
+          "set",
+          4
+        ],
+        [
+          "__getitem__",
+          3
+        ],
+        [
+          "_load_json_config",
+          2
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "CT-01",
+      "category": "Creative",
+      "mean_lines": 43.285714285714285,
+      "std_lines": 70.67018827061439,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 7,
+      "top_func_names": [
+        [
+          "main",
+          8
+        ],
+        [
+          "generate_ascii_art",
+          7
+        ],
+        [
+          "add_border",
+          2
+        ],
+        [
+          "parse_arguments",
+          1
+        ],
+        [
+          "get_ascii_art",
+          1
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "CT-02",
+      "category": "Creative",
+      "mean_lines": 38.392857142857146,
+      "std_lines": 50.94558671879684,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 3,
+      "top_func_names": [
+        [
+          "generate_project_name",
+          8
+        ],
+        [
+          "main",
+          8
+        ],
+        [
+          "parse_args",
+          2
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "CT-03",
+      "category": "Creative",
+      "mean_lines": 55.67857142857143,
+      "std_lines": 61.54269921388412,
+      "unique_class_names": 1,
+      "top_class_names": [
+        [
+          "GitRepoAnalyzer",
+          4
+        ]
+      ],
+      "unique_func_names": 29,
+      "top_func_names": [
+        [
+          "main",
+          9
+        ],
+        [
+          "analyze_commits",
+          5
+        ],
+        [
+          "run_git_command",
+          4
+        ],
+        [
+          "__init__",
+          4
+        ],
+        [
+          "_run_git_command",
+          4
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "CT-04",
+      "category": "Creative",
+      "mean_lines": 50.0,
+      "std_lines": 54.25798163799103,
+      "unique_class_names": 7,
+      "top_class_names": [
+        [
+          "NumberGuessingGame",
+          5
+        ],
+        [
+          "SnakeGame",
+          4
+        ],
+        [
+          "Direction",
+          1
+        ],
+        [
+          "Position",
+          1
+        ],
+        [
+          "GameBoard",
+          1
+        ]
+      ],
+      "unique_func_names": 53,
+      "top_func_names": [
+        [
+          "__init__",
+          12
+        ],
+        [
+          "main",
+          8
+        ],
+        [
+          "display_board",
+          4
+        ],
+        [
+          "reset_game",
+          4
+        ],
+        [
+          "make_guess",
+          4
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "CT-05",
+      "category": "Creative",
+      "mean_lines": 43.0,
+      "std_lines": 49.085930483475316,
+      "unique_class_names": 0,
+      "top_class_names": [],
+      "unique_func_names": 14,
+      "top_func_names": [
+        [
+          "generate_wordcloud",
+          10
+        ],
+        [
+          "main",
+          8
+        ],
+        [
+          "plot_top_words",
+          5
+        ],
+        [
+          "preprocess_text",
+          5
+        ],
+        [
+          "clean_text",
+          4
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "SD-01",
+      "category": "System Design",
+      "mean_lines": 48.285714285714285,
+      "std_lines": 59.84495273076033,
+      "unique_class_names": 4,
+      "top_class_names": [
+        [
+          "URLShortenerHTTPRequestHandler",
+          2
+        ],
+        [
+          "URLShortenerHandler",
+          1
+        ],
+        [
+          "URLStore",
+          1
+        ],
+        [
+          "RequestHandler",
+          1
+        ]
+      ],
+      "unique_func_names": 17,
+      "top_func_names": [
+        [
+          "shorten_url",
+          8
+        ],
+        [
+          "do_GET",
+          4
+        ],
+        [
+          "generate_short_url",
+          3
+        ],
+        [
+          "run",
+          3
+        ],
+        [
+          "encode",
+          2
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "SD-02",
+      "category": "System Design",
+      "mean_lines": 47.464285714285715,
+      "std_lines": 60.114463521600165,
+      "unique_class_names": 1,
+      "top_class_names": [
+        [
+          "StaticSiteGenerator",
+          3
+        ]
+      ],
+      "unique_func_names": 11,
+      "top_func_names": [
+        [
+          "process_markdown_file",
+          6
+        ],
+        [
+          "generate_site",
+          5
+        ],
+        [
+          "convert_markdown_to_html",
+          4
+        ],
+        [
+          "__init__",
+          3
+        ],
+        [
+          "load_template",
+          3
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "SD-03",
+      "category": "System Design",
+      "mean_lines": 66.17857142857143,
+      "std_lines": 65.19040988378833,
+      "unique_class_names": 13,
+      "top_class_names": [
+        [
+          "SimpleRESTAPI",
+          5
+        ],
+        [
+          "SimpleRouter",
+          4
+        ],
+        [
+          "SimpleMiddleware",
+          4
+        ],
+        [
+          "SimpleRequest",
+          4
+        ],
+        [
+          "SimpleResponse",
+          4
+        ]
+      ],
+      "unique_func_names": 62,
+      "top_func_names": [
+        [
+          "__init__",
+          29
+        ],
+        [
+          "add_middleware",
+          11
+        ],
+        [
+          "handle_request",
+          11
+        ],
+        [
+          "run",
+          9
+        ],
+        [
+          "do_GET",
+          9
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "SD-04",
+      "category": "System Design",
+      "mean_lines": 52.285714285714285,
+      "std_lines": 59.368616735285535,
+      "unique_class_names": 1,
+      "top_class_names": [
+        [
+          "DatabaseMigrationTool",
+          5
+        ]
+      ],
+      "unique_func_names": 21,
+      "top_func_names": [
+        [
+          "get_applied_migrations",
+          8
+        ],
+        [
+          "apply_migration",
+          8
+        ],
+        [
+          "get_migration_files",
+          6
+        ],
+        [
+          "main",
+          5
+        ],
+        [
+          "__init__",
+          5
+        ]
+      ],
+      "n_models": 7
+    },
+    {
+      "prompt_id": "SD-05",
+      "category": "System Design",
+      "mean_lines": 61.285714285714285,
+      "std_lines": 62.827346834034635,
+      "unique_class_names": 7,
+      "top_class_names": [
+        [
+          "WebScraper",
+          8
+        ],
+        [
+          "ExampleScraper",
+          6
+        ],
+        [
+          "ExampleSiteScraper",
+          4
+        ],
+        [
+          "BaseScraper",
+          3
+        ],
+        [
+          "ArticleScraper",
+          1
+        ]
+      ],
+      "unique_func_names": 16,
+      "top_func_names": [
+        [
+          "__init__",
+          13
+        ],
+        [
+          "scrape",
+          11
+        ],
+        [
+          "fetch_page",
+          10
+        ],
+        [
+          "save_to_csv",
+          10
+        ],
+        [
+          "parse",
+          8
+        ]
+      ],
+      "n_models": 7
+    }
+  ]
+}

@@ -1,0 +1,631 @@
+prompt_id,model_display,temperature,responses
+AL-01,Claude 3.5 Haiku,0.0,4
+AL-01,Claude 3.5 Haiku,0.6,4
+AL-01,Claude 3.5 Haiku,1.0,4
+AL-01,Claude Sonnet 4,0.0,4
+AL-01,Claude Sonnet 4,0.6,4
+AL-01,Claude Sonnet 4,1.0,4
+AL-01,GPT-4o,0.0,4
+AL-01,GPT-4o,0.6,4
+AL-01,GPT-4o,1.0,4
+AL-01,GPT-4o-mini,0.0,4
+AL-01,GPT-4o-mini,0.6,4
+AL-01,GPT-4o-mini,1.0,4
+AL-01,Gemini 2.5 Flash,0.0,4
+AL-01,Gemini 2.5 Flash,0.6,4
+AL-01,Gemini 2.5 Flash,1.0,4
+AL-01,Gemini 2.5 Pro,0.0,4
+AL-01,Gemini 2.5 Pro,0.6,4
+AL-01,Gemini 2.5 Pro,1.0,4
+AL-01,o3-mini,0.0,4
+AL-01,o3-mini,0.6,4
+AL-01,o3-mini,1.0,4
+AL-02,Claude 3.5 Haiku,0.0,4
+AL-02,Claude 3.5 Haiku,0.6,4
+AL-02,Claude 3.5 Haiku,1.0,4
+AL-02,Claude Sonnet 4,0.0,4
+AL-02,Claude Sonnet 4,0.6,4
+AL-02,Claude Sonnet 4,1.0,4
+AL-02,GPT-4o,0.0,4
+AL-02,GPT-4o,0.6,4
+AL-02,GPT-4o,1.0,4
+AL-02,GPT-4o-mini,0.0,4
+AL-02,GPT-4o-mini,0.6,4
+AL-02,GPT-4o-mini,1.0,4
+AL-02,Gemini 2.5 Flash,0.0,4
+AL-02,Gemini 2.5 Flash,0.6,4
+AL-02,Gemini 2.5 Flash,1.0,4
+AL-02,Gemini 2.5 Pro,0.0,4
+AL-02,Gemini 2.5 Pro,0.6,4
+AL-02,Gemini 2.5 Pro,1.0,4
+AL-02,o3-mini,0.0,4
+AL-02,o3-mini,0.6,4
+AL-02,o3-mini,1.0,4
+AL-03,Claude 3.5 Haiku,0.0,4
+AL-03,Claude 3.5 Haiku,0.6,4
+AL-03,Claude 3.5 Haiku,1.0,4
+AL-03,Claude Sonnet 4,0.0,4
+AL-03,Claude Sonnet 4,0.6,4
+AL-03,Claude Sonnet 4,1.0,4
+AL-03,GPT-4o,0.0,4
+AL-03,GPT-4o,0.6,4
+AL-03,GPT-4o,1.0,4
+AL-03,GPT-4o-mini,0.0,4
+AL-03,GPT-4o-mini,0.6,4
+AL-03,GPT-4o-mini,1.0,4
+AL-03,Gemini 2.5 Flash,0.0,4
+AL-03,Gemini 2.5 Flash,0.6,4
+AL-03,Gemini 2.5 Flash,1.0,4
+AL-03,Gemini 2.5 Pro,0.0,4
+AL-03,Gemini 2.5 Pro,0.6,4
+AL-03,Gemini 2.5 Pro,1.0,4
+AL-03,o3-mini,0.0,4
+AL-03,o3-mini,0.6,4
+AL-03,o3-mini,1.0,4
+AL-04,Claude 3.5 Haiku,0.0,4
+AL-04,Claude 3.5 Haiku,0.6,4
+AL-04,Claude 3.5 Haiku,1.0,4
+AL-04,Claude Sonnet 4,0.0,4
+AL-04,Claude Sonnet 4,0.6,4
+AL-04,Claude Sonnet 4,1.0,4
+AL-04,GPT-4o,0.0,4
+AL-04,GPT-4o,0.6,4
+AL-04,GPT-4o,1.0,4
+AL-04,GPT-4o-mini,0.0,4
+AL-04,GPT-4o-mini,0.6,4
+AL-04,GPT-4o-mini,1.0,4
+AL-04,Gemini 2.5 Flash,0.0,4
+AL-04,Gemini 2.5 Flash,0.6,4
+AL-04,Gemini 2.5 Flash,1.0,4
+AL-04,Gemini 2.5 Pro,0.0,4
+AL-04,Gemini 2.5 Pro,0.6,4
+AL-04,Gemini 2.5 Pro,1.0,4
+AL-04,o3-mini,0.0,4
+AL-04,o3-mini,0.6,4
+AL-04,o3-mini,1.0,4
+AL-05,Claude 3.5 Haiku,0.0,4
+AL-05,Claude 3.5 Haiku,0.6,4
+AL-05,Claude 3.5 Haiku,1.0,4
+AL-05,Claude Sonnet 4,0.0,4
+AL-05,Claude Sonnet 4,0.6,4
+AL-05,Claude Sonnet 4,1.0,4
+AL-05,GPT-4o,0.0,4
+AL-05,GPT-4o,0.6,4
+AL-05,GPT-4o,1.0,4
+AL-05,GPT-4o-mini,0.0,4
+AL-05,GPT-4o-mini,0.6,4
+AL-05,GPT-4o-mini,1.0,4
+AL-05,Gemini 2.5 Flash,0.0,4
+AL-05,Gemini 2.5 Flash,0.6,4
+AL-05,Gemini 2.5 Flash,1.0,4
+AL-05,Gemini 2.5 Pro,0.0,4
+AL-05,Gemini 2.5 Pro,0.6,4
+AL-05,Gemini 2.5 Pro,1.0,4
+AL-05,o3-mini,0.0,4
+AL-05,o3-mini,0.6,4
+AL-05,o3-mini,1.0,4
+CT-01,Claude 3.5 Haiku,0.0,4
+CT-01,Claude 3.5 Haiku,0.6,4
+CT-01,Claude 3.5 Haiku,1.0,4
+CT-01,Claude Sonnet 4,0.0,4
+CT-01,Claude Sonnet 4,0.6,4
+CT-01,Claude Sonnet 4,1.0,4
+CT-01,GPT-4o,0.0,4
+CT-01,GPT-4o,0.6,4
+CT-01,GPT-4o,1.0,4
+CT-01,GPT-4o-mini,0.0,4
+CT-01,GPT-4o-mini,0.6,4
+CT-01,GPT-4o-mini,1.0,4
+CT-01,Gemini 2.5 Flash,0.0,4
+CT-01,Gemini 2.5 Flash,0.6,4
+CT-01,Gemini 2.5 Flash,1.0,4
+CT-01,Gemini 2.5 Pro,0.0,4
+CT-01,Gemini 2.5 Pro,0.6,4
+CT-01,Gemini 2.5 Pro,1.0,4
+CT-01,o3-mini,0.0,4
+CT-01,o3-mini,0.6,4
+CT-01,o3-mini,1.0,4
+CT-02,Claude 3.5 Haiku,0.0,4
+CT-02,Claude 3.5 Haiku,0.6,4
+CT-02,Claude 3.5 Haiku,1.0,4
+CT-02,Claude Sonnet 4,0.0,4
+CT-02,Claude Sonnet 4,0.6,4
+CT-02,Claude Sonnet 4,1.0,4
+CT-02,GPT-4o,0.0,4
+CT-02,GPT-4o,0.6,4
+CT-02,GPT-4o,1.0,4
+CT-02,GPT-4o-mini,0.0,4
+CT-02,GPT-4o-mini,0.6,4
+CT-02,GPT-4o-mini,1.0,4
+CT-02,Gemini 2.5 Flash,0.0,4
+CT-02,Gemini 2.5 Flash,0.6,4
+CT-02,Gemini 2.5 Flash,1.0,4
+CT-02,Gemini 2.5 Pro,0.0,4
+CT-02,Gemini 2.5 Pro,0.6,4
+CT-02,Gemini 2.5 Pro,1.0,4
+CT-02,o3-mini,0.0,4
+CT-02,o3-mini,0.6,4
+CT-02,o3-mini,1.0,4
+CT-03,Claude 3.5 Haiku,0.0,4
+CT-03,Claude 3.5 Haiku,0.6,4
+CT-03,Claude 3.5 Haiku,1.0,4
+CT-03,Claude Sonnet 4,0.0,4
+CT-03,Claude Sonnet 4,0.6,4
+CT-03,Claude Sonnet 4,1.0,4
+CT-03,GPT-4o,0.0,4
+CT-03,GPT-4o,0.6,4
+CT-03,GPT-4o,1.0,4
+CT-03,GPT-4o-mini,0.0,4
+CT-03,GPT-4o-mini,0.6,4
+CT-03,GPT-4o-mini,1.0,4
+CT-03,Gemini 2.5 Flash,0.0,4
+CT-03,Gemini 2.5 Flash,0.6,4
+CT-03,Gemini 2.5 Flash,1.0,4
+CT-03,Gemini 2.5 Pro,0.0,4
+CT-03,Gemini 2.5 Pro,0.6,4
+CT-03,Gemini 2.5 Pro,1.0,4
+CT-03,o3-mini,0.0,4
+CT-03,o3-mini,0.6,4
+CT-03,o3-mini,1.0,4
+CT-04,Claude 3.5 Haiku,0.0,4
+CT-04,Claude 3.5 Haiku,0.6,4
+CT-04,Claude 3.5 Haiku,1.0,4
+CT-04,Claude Sonnet 4,0.0,4
+CT-04,Claude Sonnet 4,0.6,4
+CT-04,Claude Sonnet 4,1.0,4
+CT-04,GPT-4o,0.0,4
+CT-04,GPT-4o,0.6,4
+CT-04,GPT-4o,1.0,4
+CT-04,GPT-4o-mini,0.0,4
+CT-04,GPT-4o-mini,0.6,4
+CT-04,GPT-4o-mini,1.0,4
+CT-04,Gemini 2.5 Flash,0.0,4
+CT-04,Gemini 2.5 Flash,0.6,4
+CT-04,Gemini 2.5 Flash,1.0,4
+CT-04,Gemini 2.5 Pro,0.0,4
+CT-04,Gemini 2.5 Pro,0.6,4
+CT-04,Gemini 2.5 Pro,1.0,4
+CT-04,o3-mini,0.0,4
+CT-04,o3-mini,0.6,4
+CT-04,o3-mini,1.0,4
+CT-05,Claude 3.5 Haiku,0.0,4
+CT-05,Claude 3.5 Haiku,0.6,4
+CT-05,Claude 3.5 Haiku,1.0,4
+CT-05,Claude Sonnet 4,0.0,4
+CT-05,Claude Sonnet 4,0.6,4
+CT-05,Claude Sonnet 4,1.0,4
+CT-05,GPT-4o,0.0,4
+CT-05,GPT-4o,0.6,4
+CT-05,GPT-4o,1.0,4
+CT-05,GPT-4o-mini,0.0,4
+CT-05,GPT-4o-mini,0.6,4
+CT-05,GPT-4o-mini,1.0,4
+CT-05,Gemini 2.5 Flash,0.0,4
+CT-05,Gemini 2.5 Flash,0.6,4
+CT-05,Gemini 2.5 Flash,1.0,4
+CT-05,Gemini 2.5 Pro,0.0,4
+CT-05,Gemini 2.5 Pro,0.6,4
+CT-05,Gemini 2.5 Pro,1.0,4
+CT-05,o3-mini,0.0,4
+CT-05,o3-mini,0.6,4
+CT-05,o3-mini,1.0,4
+NM-01,Claude 3.5 Haiku,0.0,4
+NM-01,Claude 3.5 Haiku,0.6,4
+NM-01,Claude 3.5 Haiku,1.0,4
+NM-01,Claude Sonnet 4,0.0,4
+NM-01,Claude Sonnet 4,0.6,4
+NM-01,Claude Sonnet 4,1.0,4
+NM-01,GPT-4o,0.0,4
+NM-01,GPT-4o,0.6,4
+NM-01,GPT-4o,1.0,4
+NM-01,GPT-4o-mini,0.0,4
+NM-01,GPT-4o-mini,0.6,4
+NM-01,GPT-4o-mini,1.0,4
+NM-01,Gemini 2.5 Flash,0.0,4
+NM-01,Gemini 2.5 Flash,0.6,4
+NM-01,Gemini 2.5 Flash,1.0,4
+NM-01,Gemini 2.5 Pro,0.0,4
+NM-01,Gemini 2.5 Pro,0.6,4
+NM-01,Gemini 2.5 Pro,1.0,4
+NM-01,o3-mini,0.0,4
+NM-01,o3-mini,0.6,4
+NM-01,o3-mini,1.0,4
+NM-02,Claude 3.5 Haiku,0.0,4
+NM-02,Claude 3.5 Haiku,0.6,4
+NM-02,Claude 3.5 Haiku,1.0,4
+NM-02,Claude Sonnet 4,0.0,4
+NM-02,Claude Sonnet 4,0.6,4
+NM-02,Claude Sonnet 4,1.0,4
+NM-02,GPT-4o,0.0,4
+NM-02,GPT-4o,0.6,4
+NM-02,GPT-4o,1.0,4
+NM-02,GPT-4o-mini,0.0,4
+NM-02,GPT-4o-mini,0.6,4
+NM-02,GPT-4o-mini,1.0,4
+NM-02,Gemini 2.5 Flash,0.0,4
+NM-02,Gemini 2.5 Flash,0.6,4
+NM-02,Gemini 2.5 Flash,1.0,4
+NM-02,Gemini 2.5 Pro,0.0,4
+NM-02,Gemini 2.5 Pro,0.6,4
+NM-02,Gemini 2.5 Pro,1.0,4
+NM-02,o3-mini,0.0,4
+NM-02,o3-mini,0.6,4
+NM-02,o3-mini,1.0,4
+NM-03,Claude 3.5 Haiku,0.0,4
+NM-03,Claude 3.5 Haiku,0.6,4
+NM-03,Claude 3.5 Haiku,1.0,4
+NM-03,Claude Sonnet 4,0.0,4
+NM-03,Claude Sonnet 4,0.6,4
+NM-03,Claude Sonnet 4,1.0,4
+NM-03,GPT-4o,0.0,4
+NM-03,GPT-4o,0.6,4
+NM-03,GPT-4o,1.0,4
+NM-03,GPT-4o-mini,0.0,4
+NM-03,GPT-4o-mini,0.6,4
+NM-03,GPT-4o-mini,1.0,4
+NM-03,Gemini 2.5 Flash,0.0,4
+NM-03,Gemini 2.5 Flash,0.6,4
+NM-03,Gemini 2.5 Flash,1.0,4
+NM-03,Gemini 2.5 Pro,0.0,4
+NM-03,Gemini 2.5 Pro,0.6,4
+NM-03,Gemini 2.5 Pro,1.0,4
+NM-03,o3-mini,0.0,4
+NM-03,o3-mini,0.6,4
+NM-03,o3-mini,1.0,4
+NM-04,Claude 3.5 Haiku,0.0,4
+NM-04,Claude 3.5 Haiku,0.6,4
+NM-04,Claude 3.5 Haiku,1.0,4
+NM-04,Claude Sonnet 4,0.0,4
+NM-04,Claude Sonnet 4,0.6,4
+NM-04,Claude Sonnet 4,1.0,4
+NM-04,GPT-4o,0.0,4
+NM-04,GPT-4o,0.6,4
+NM-04,GPT-4o,1.0,4
+NM-04,GPT-4o-mini,0.0,4
+NM-04,GPT-4o-mini,0.6,4
+NM-04,GPT-4o-mini,1.0,4
+NM-04,Gemini 2.5 Flash,0.0,4
+NM-04,Gemini 2.5 Flash,0.6,4
+NM-04,Gemini 2.5 Flash,1.0,4
+NM-04,Gemini 2.5 Pro,0.0,4
+NM-04,Gemini 2.5 Pro,0.6,4
+NM-04,Gemini 2.5 Pro,1.0,4
+NM-04,o3-mini,0.0,4
+NM-04,o3-mini,0.6,4
+NM-04,o3-mini,1.0,4
+NM-05,Claude 3.5 Haiku,0.0,4
+NM-05,Claude 3.5 Haiku,0.6,4
+NM-05,Claude 3.5 Haiku,1.0,4
+NM-05,Claude Sonnet 4,0.0,4
+NM-05,Claude Sonnet 4,0.6,4
+NM-05,Claude Sonnet 4,1.0,4
+NM-05,GPT-4o,0.0,4
+NM-05,GPT-4o,0.6,4
+NM-05,GPT-4o,1.0,4
+NM-05,GPT-4o-mini,0.0,4
+NM-05,GPT-4o-mini,0.6,4
+NM-05,GPT-4o-mini,1.0,4
+NM-05,Gemini 2.5 Flash,0.0,4
+NM-05,Gemini 2.5 Flash,0.6,4
+NM-05,Gemini 2.5 Flash,1.0,4
+NM-05,Gemini 2.5 Pro,0.0,4
+NM-05,Gemini 2.5 Pro,0.6,4
+NM-05,Gemini 2.5 Pro,1.0,4
+NM-05,o3-mini,0.0,4
+NM-05,o3-mini,0.6,4
+NM-05,o3-mini,1.0,4
+OD-01,Claude 3.5 Haiku,0.0,4
+OD-01,Claude 3.5 Haiku,0.6,4
+OD-01,Claude 3.5 Haiku,1.0,4
+OD-01,Claude Sonnet 4,0.0,4
+OD-01,Claude Sonnet 4,0.6,4
+OD-01,Claude Sonnet 4,1.0,4
+OD-01,GPT-4o,0.0,4
+OD-01,GPT-4o,0.6,4
+OD-01,GPT-4o,1.0,4
+OD-01,GPT-4o-mini,0.0,4
+OD-01,GPT-4o-mini,0.6,4
+OD-01,GPT-4o-mini,1.0,4
+OD-01,Gemini 2.5 Flash,0.0,4
+OD-01,Gemini 2.5 Flash,0.6,4
+OD-01,Gemini 2.5 Flash,1.0,4
+OD-01,Gemini 2.5 Pro,0.0,4
+OD-01,Gemini 2.5 Pro,0.6,4
+OD-01,Gemini 2.5 Pro,1.0,4
+OD-01,o3-mini,0.0,4
+OD-01,o3-mini,0.6,4
+OD-01,o3-mini,1.0,4
+OD-02,Claude 3.5 Haiku,0.0,4
+OD-02,Claude 3.5 Haiku,0.6,4
+OD-02,Claude 3.5 Haiku,1.0,4
+OD-02,Claude Sonnet 4,0.0,4
+OD-02,Claude Sonnet 4,0.6,4
+OD-02,Claude Sonnet 4,1.0,4
+OD-02,GPT-4o,0.0,4
+OD-02,GPT-4o,0.6,4
+OD-02,GPT-4o,1.0,4
+OD-02,GPT-4o-mini,0.0,4
+OD-02,GPT-4o-mini,0.6,4
+OD-02,GPT-4o-mini,1.0,4
+OD-02,Gemini 2.5 Flash,0.0,4
+OD-02,Gemini 2.5 Flash,0.6,4
+OD-02,Gemini 2.5 Flash,1.0,4
+OD-02,Gemini 2.5 Pro,0.0,4
+OD-02,Gemini 2.5 Pro,0.6,4
+OD-02,Gemini 2.5 Pro,1.0,4
+OD-02,o3-mini,0.0,4
+OD-02,o3-mini,0.6,4
+OD-02,o3-mini,1.0,4
+OD-03,Claude 3.5 Haiku,0.0,4
+OD-03,Claude 3.5 Haiku,0.6,4
+OD-03,Claude 3.5 Haiku,1.0,4
+OD-03,Claude Sonnet 4,0.0,4
+OD-03,Claude Sonnet 4,0.6,4
+OD-03,Claude Sonnet 4,1.0,4
+OD-03,GPT-4o,0.0,4
+OD-03,GPT-4o,0.6,4
+OD-03,GPT-4o,1.0,4
+OD-03,GPT-4o-mini,0.0,4
+OD-03,GPT-4o-mini,0.6,4
+OD-03,GPT-4o-mini,1.0,4
+OD-03,Gemini 2.5 Flash,0.0,4
+OD-03,Gemini 2.5 Flash,0.6,4
+OD-03,Gemini 2.5 Flash,1.0,4
+OD-03,Gemini 2.5 Pro,0.0,4
+OD-03,Gemini 2.5 Pro,0.6,4
+OD-03,Gemini 2.5 Pro,1.0,4
+OD-03,o3-mini,0.0,4
+OD-03,o3-mini,0.6,4
+OD-03,o3-mini,1.0,4
+OD-04,Claude 3.5 Haiku,0.0,4
+OD-04,Claude 3.5 Haiku,0.6,4
+OD-04,Claude 3.5 Haiku,1.0,4
+OD-04,Claude Sonnet 4,0.0,4
+OD-04,Claude Sonnet 4,0.6,4
+OD-04,Claude Sonnet 4,1.0,4
+OD-04,GPT-4o,0.0,4
+OD-04,GPT-4o,0.6,4
+OD-04,GPT-4o,1.0,4
+OD-04,GPT-4o-mini,0.0,4
+OD-04,GPT-4o-mini,0.6,4
+OD-04,GPT-4o-mini,1.0,4
+OD-04,Gemini 2.5 Flash,0.0,4
+OD-04,Gemini 2.5 Flash,0.6,4
+OD-04,Gemini 2.5 Flash,1.0,4
+OD-04,Gemini 2.5 Pro,0.0,4
+OD-04,Gemini 2.5 Pro,0.6,4
+OD-04,Gemini 2.5 Pro,1.0,4
+OD-04,o3-mini,0.0,4
+OD-04,o3-mini,0.6,4
+OD-04,o3-mini,1.0,4
+OD-05,Claude 3.5 Haiku,0.0,4
+OD-05,Claude 3.5 Haiku,0.6,4
+OD-05,Claude 3.5 Haiku,1.0,4
+OD-05,Claude Sonnet 4,0.0,4
+OD-05,Claude Sonnet 4,0.6,4
+OD-05,Claude Sonnet 4,1.0,4
+OD-05,GPT-4o,0.0,4
+OD-05,GPT-4o,0.6,4
+OD-05,GPT-4o,1.0,4
+OD-05,GPT-4o-mini,0.0,4
+OD-05,GPT-4o-mini,0.6,4
+OD-05,GPT-4o-mini,1.0,4
+OD-05,Gemini 2.5 Flash,0.0,4
+OD-05,Gemini 2.5 Flash,0.6,4
+OD-05,Gemini 2.5 Flash,1.0,4
+OD-05,Gemini 2.5 Pro,0.0,4
+OD-05,Gemini 2.5 Pro,0.6,4
+OD-05,Gemini 2.5 Pro,1.0,4
+OD-05,o3-mini,0.0,4
+OD-05,o3-mini,0.6,4
+OD-05,o3-mini,1.0,4
+RF-01,Claude 3.5 Haiku,0.0,4
+RF-01,Claude 3.5 Haiku,0.6,4
+RF-01,Claude 3.5 Haiku,1.0,4
+RF-01,Claude Sonnet 4,0.0,4
+RF-01,Claude Sonnet 4,0.6,4
+RF-01,Claude Sonnet 4,1.0,4
+RF-01,GPT-4o,0.0,4
+RF-01,GPT-4o,0.6,4
+RF-01,GPT-4o,1.0,4
+RF-01,GPT-4o-mini,0.0,4
+RF-01,GPT-4o-mini,0.6,4
+RF-01,GPT-4o-mini,1.0,4
+RF-01,Gemini 2.5 Flash,0.0,4
+RF-01,Gemini 2.5 Flash,0.6,4
+RF-01,Gemini 2.5 Flash,1.0,4
+RF-01,Gemini 2.5 Pro,0.0,4
+RF-01,Gemini 2.5 Pro,0.6,4
+RF-01,Gemini 2.5 Pro,1.0,4
+RF-01,o3-mini,0.0,4
+RF-01,o3-mini,0.6,4
+RF-01,o3-mini,1.0,4
+RF-02,Claude 3.5 Haiku,0.0,4
+RF-02,Claude 3.5 Haiku,0.6,4
+RF-02,Claude 3.5 Haiku,1.0,4
+RF-02,Claude Sonnet 4,0.0,4
+RF-02,Claude Sonnet 4,0.6,4
+RF-02,Claude Sonnet 4,1.0,4
+RF-02,GPT-4o,0.0,4
+RF-02,GPT-4o,0.6,4
+RF-02,GPT-4o,1.0,4
+RF-02,GPT-4o-mini,0.0,4
+RF-02,GPT-4o-mini,0.6,4
+RF-02,GPT-4o-mini,1.0,4
+RF-02,Gemini 2.5 Flash,0.0,4
+RF-02,Gemini 2.5 Flash,0.6,4
+RF-02,Gemini 2.5 Flash,1.0,4
+RF-02,Gemini 2.5 Pro,0.0,4
+RF-02,Gemini 2.5 Pro,0.6,4
+RF-02,Gemini 2.5 Pro,1.0,4
+RF-02,o3-mini,0.0,4
+RF-02,o3-mini,0.6,4
+RF-02,o3-mini,1.0,4
+RF-03,Claude 3.5 Haiku,0.0,4
+RF-03,Claude 3.5 Haiku,0.6,4
+RF-03,Claude 3.5 Haiku,1.0,4
+RF-03,Claude Sonnet 4,0.0,4
+RF-03,Claude Sonnet 4,0.6,4
+RF-03,Claude Sonnet 4,1.0,4
+RF-03,GPT-4o,0.0,4
+RF-03,GPT-4o,0.6,4
+RF-03,GPT-4o,1.0,4
+RF-03,GPT-4o-mini,0.0,4
+RF-03,GPT-4o-mini,0.6,4
+RF-03,GPT-4o-mini,1.0,4
+RF-03,Gemini 2.5 Flash,0.0,4
+RF-03,Gemini 2.5 Flash,0.6,4
+RF-03,Gemini 2.5 Flash,1.0,4
+RF-03,Gemini 2.5 Pro,0.0,4
+RF-03,Gemini 2.5 Pro,0.6,4
+RF-03,Gemini 2.5 Pro,1.0,4
+RF-03,o3-mini,0.0,4
+RF-03,o3-mini,0.6,4
+RF-03,o3-mini,1.0,4
+RF-04,Claude 3.5 Haiku,0.0,4
+RF-04,Claude 3.5 Haiku,0.6,4
+RF-04,Claude 3.5 Haiku,1.0,4
+RF-04,Claude Sonnet 4,0.0,4
+RF-04,Claude Sonnet 4,0.6,4
+RF-04,Claude Sonnet 4,1.0,4
+RF-04,GPT-4o,0.0,4
+RF-04,GPT-4o,0.6,4
+RF-04,GPT-4o,1.0,4
+RF-04,GPT-4o-mini,0.0,4
+RF-04,GPT-4o-mini,0.6,4
+RF-04,GPT-4o-mini,1.0,4
+RF-04,Gemini 2.5 Flash,0.0,4
+RF-04,Gemini 2.5 Flash,0.6,4
+RF-04,Gemini 2.5 Flash,1.0,4
+RF-04,Gemini 2.5 Pro,0.0,4
+RF-04,Gemini 2.5 Pro,0.6,4
+RF-04,Gemini 2.5 Pro,1.0,4
+RF-04,o3-mini,0.0,4
+RF-04,o3-mini,0.6,4
+RF-04,o3-mini,1.0,4
+RF-05,Claude 3.5 Haiku,0.0,4
+RF-05,Claude 3.5 Haiku,0.6,4
+RF-05,Claude 3.5 Haiku,1.0,4
+RF-05,Claude Sonnet 4,0.0,4
+RF-05,Claude Sonnet 4,0.6,4
+RF-05,Claude Sonnet 4,1.0,4
+RF-05,GPT-4o,0.0,4
+RF-05,GPT-4o,0.6,4
+RF-05,GPT-4o,1.0,4
+RF-05,GPT-4o-mini,0.0,4
+RF-05,GPT-4o-mini,0.6,4
+RF-05,GPT-4o-mini,1.0,4
+RF-05,Gemini 2.5 Flash,0.0,4
+RF-05,Gemini 2.5 Flash,0.6,4
+RF-05,Gemini 2.5 Flash,1.0,4
+RF-05,Gemini 2.5 Pro,0.0,4
+RF-05,Gemini 2.5 Pro,0.6,4
+RF-05,Gemini 2.5 Pro,1.0,4
+RF-05,o3-mini,0.0,4
+RF-05,o3-mini,0.6,4
+RF-05,o3-mini,1.0,4
+SD-01,Claude 3.5 Haiku,0.0,4
+SD-01,Claude 3.5 Haiku,0.6,4
+SD-01,Claude 3.5 Haiku,1.0,4
+SD-01,Claude Sonnet 4,0.0,4
+SD-01,Claude Sonnet 4,0.6,4
+SD-01,Claude Sonnet 4,1.0,4
+SD-01,GPT-4o,0.0,4
+SD-01,GPT-4o,0.6,4
+SD-01,GPT-4o,1.0,4
+SD-01,GPT-4o-mini,0.0,4
+SD-01,GPT-4o-mini,0.6,4
+SD-01,GPT-4o-mini,1.0,4
+SD-01,Gemini 2.5 Flash,0.0,4
+SD-01,Gemini 2.5 Flash,0.6,4
+SD-01,Gemini 2.5 Flash,1.0,4
+SD-01,Gemini 2.5 Pro,0.0,4
+SD-01,Gemini 2.5 Pro,0.6,4
+SD-01,Gemini 2.5 Pro,1.0,4
+SD-01,o3-mini,0.0,4
+SD-01,o3-mini,0.6,4
+SD-01,o3-mini,1.0,4
+SD-02,Claude 3.5 Haiku,0.0,4
+SD-02,Claude 3.5 Haiku,0.6,4
+SD-02,Claude 3.5 Haiku,1.0,4
+SD-02,Claude Sonnet 4,0.0,4
+SD-02,Claude Sonnet 4,0.6,4
+SD-02,Claude Sonnet 4,1.0,4
+SD-02,GPT-4o,0.0,4
+SD-02,GPT-4o,0.6,4
+SD-02,GPT-4o,1.0,4
+SD-02,GPT-4o-mini,0.0,4
+SD-02,GPT-4o-mini,0.6,4
+SD-02,GPT-4o-mini,1.0,4
+SD-02,Gemini 2.5 Flash,0.0,4
+SD-02,Gemini 2.5 Flash,0.6,4
+SD-02,Gemini 2.5 Flash,1.0,4
+SD-02,Gemini 2.5 Pro,0.0,4
+SD-02,Gemini 2.5 Pro,0.6,4
+SD-02,Gemini 2.5 Pro,1.0,4
+SD-02,o3-mini,0.0,4
+SD-02,o3-mini,0.6,4
+SD-02,o3-mini,1.0,4
+SD-03,Claude 3.5 Haiku,0.0,4
+SD-03,Claude 3.5 Haiku,0.6,4
+SD-03,Claude 3.5 Haiku,1.0,4
+SD-03,Claude Sonnet 4,0.0,4
+SD-03,Claude Sonnet 4,0.6,4
+SD-03,Claude Sonnet 4,1.0,4
+SD-03,GPT-4o,0.0,4
+SD-03,GPT-4o,0.6,4
+SD-03,GPT-4o,1.0,4
+SD-03,GPT-4o-mini,0.0,4
+SD-03,GPT-4o-mini,0.6,4
+SD-03,GPT-4o-mini,1.0,4
+SD-03,Gemini 2.5 Flash,0.0,4
+SD-03,Gemini 2.5 Flash,0.6,4
+SD-03,Gemini 2.5 Flash,1.0,4
+SD-03,Gemini 2.5 Pro,0.0,4
+SD-03,Gemini 2.5 Pro,0.6,4
+SD-03,Gemini 2.5 Pro,1.0,4
+SD-03,o3-mini,0.0,4
+SD-03,o3-mini,0.6,4
+SD-03,o3-mini,1.0,4
+SD-04,Claude 3.5 Haiku,0.0,4
+SD-04,Claude 3.5 Haiku,0.6,4
+SD-04,Claude 3.5 Haiku,1.0,4
+SD-04,Claude Sonnet 4,0.0,4
+SD-04,Claude Sonnet 4,0.6,4
+SD-04,Claude Sonnet 4,1.0,4
+SD-04,GPT-4o,0.0,4
+SD-04,GPT-4o,0.6,4
+SD-04,GPT-4o,1.0,4
+SD-04,GPT-4o-mini,0.0,4
+SD-04,GPT-4o-mini,0.6,4
+SD-04,GPT-4o-mini,1.0,4
+SD-04,Gemini 2.5 Flash,0.0,4
+SD-04,Gemini 2.5 Flash,0.6,4
+SD-04,Gemini 2.5 Flash,1.0,4
+SD-04,Gemini 2.5 Pro,0.0,4
+SD-04,Gemini 2.5 Pro,0.6,4
+SD-04,Gemini 2.5 Pro,1.0,4
+SD-04,o3-mini,0.0,4
+SD-04,o3-mini,0.6,4
+SD-04,o3-mini,1.0,4
+SD-05,Claude 3.5 Haiku,0.0,4
+SD-05,Claude 3.5 Haiku,0.6,4
+SD-05,Claude 3.5 Haiku,1.0,4
+SD-05,Claude Sonnet 4,0.0,4
+SD-05,Claude Sonnet 4,0.6,4
+SD-05,Claude Sonnet 4,1.0,4
+SD-05,GPT-4o,0.0,4
+SD-05,GPT-4o,0.6,4
+SD-05,GPT-4o,1.0,4
+SD-05,GPT-4o-mini,0.0,4
+SD-05,GPT-4o-mini,0.6,4
+SD-05,GPT-4o-mini,1.0,4
+SD-05,Gemini 2.5 Flash,0.0,4
+SD-05,Gemini 2.5 Flash,0.6,4
+SD-05,Gemini 2.5 Flash,1.0,4
+SD-05,Gemini 2.5 Pro,0.0,4
+SD-05,Gemini 2.5 Pro,0.6,4
+SD-05,Gemini 2.5 Pro,1.0,4
+SD-05,o3-mini,0.0,4
+SD-05,o3-mini,0.6,4
+SD-05,o3-mini,1.0,4

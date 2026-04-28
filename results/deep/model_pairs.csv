@@ -1,0 +1,22 @@
+model_a,model_b,ast_sim,naming_sim,import_match,pattern_jaccard
+Claude 3.5 Haiku,Gemini 2.5 Flash,1.0000,1.0000,1.0000,1.0000
+Claude 3.5 Haiku,Gemini 2.5 Pro,1.0000,1.0000,1.0000,1.0000
+Gemini 2.5 Flash,Gemini 2.5 Pro,1.0000,1.0000,1.0000,1.0000
+Claude 3.5 Haiku,Claude Sonnet 4,0.0148,0.0000,0.5667,0.0000
+Claude Sonnet 4,Gemini 2.5 Flash,0.0148,0.0000,0.5667,0.0000
+Claude Sonnet 4,Gemini 2.5 Pro,0.0148,0.0000,0.5667,0.0000
+GPT-4o,GPT-4o-mini,0.6686,0.4331,0.4667,0.7260
+GPT-4o,o3-mini,0.5785,0.2820,0.3667,0.6342
+GPT-4o-mini,o3-mini,0.5299,0.2877,0.3667,0.6015
+Claude Sonnet 4,o3-mini,0.3331,0.2020,0.3333,0.4512
+Claude 3.5 Haiku,GPT-4o-mini,0.0297,0.0000,0.3000,0.0000
+Claude 3.5 Haiku,o3-mini,0.0593,0.0333,0.3000,0.0333
+Claude Sonnet 4,GPT-4o-mini,0.3487,0.2305,0.3000,0.4591
+GPT-4o-mini,Gemini 2.5 Flash,0.0297,0.0000,0.3000,0.0000
+GPT-4o-mini,Gemini 2.5 Pro,0.0297,0.0000,0.3000,0.0000
+Gemini 2.5 Flash,o3-mini,0.0593,0.0333,0.3000,0.0333
+Gemini 2.5 Pro,o3-mini,0.0593,0.0333,0.3000,0.0333
+Claude 3.5 Haiku,GPT-4o,0.0325,0.0000,0.2333,0.0000
+Claude Sonnet 4,GPT-4o,0.3512,0.1905,0.2333,0.4230
+GPT-4o,Gemini 2.5 Flash,0.0325,0.0000,0.2333,0.0000
+GPT-4o,Gemini 2.5 Pro,0.0325,0.0000,0.2333,0.0000
