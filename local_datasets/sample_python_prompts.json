@@ -1,0 +1,35 @@
+{
+  "name": "sample_python_prompts",
+  "description": "Small prompt subset for quick multi-model collection and analysis.",
+  "prompt_ids": [
+    "OD-01",
+    "AL-01",
+    "SD-01"
+  ],
+  "prompts": [
+    {
+      "id": "OD-01",
+      "category": "OPEN_DESIGN",
+      "language": "python",
+      "prompt": "Write a Python class that implements an in-memory cache with expiration. Include methods for get, set, and cleanup of expired entries."
+    },
+    {
+      "id": "AL-01",
+      "category": "ALGORITHM",
+      "language": "python",
+      "prompt": "Write a Python function that finds all anagram groups in a list of words. Return groups sorted by size (largest first)."
+    },
+    {
+      "id": "SD-01",
+      "category": "SYSTEM_DESIGN",
+      "language": "python",
+      "prompt": "Design and implement a simple URL shortener in Python. Include the shortening logic, storage, and a basic HTTP server to handle redirects."
+    }
+  ],
+  "run_config": {
+    "samples_per_model": 2,
+    "temperatures": [
+      1.0
+    ]
+  }
+}

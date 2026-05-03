@@ -1,0 +1,56 @@
+{
+  "name": "tier_a_sample_from_pool_b_python_tasks",
+  "description": "Five Pool B prompts whose bundled reference answers contain high-impact, exploit-shaped patterns (not safe reference code). Rows are keyed by dataset:split:row_index — row_index alone is ambiguous in the merged JSONL.",
+  "source_file": "local_datasets/pool_b_open_ended_candidates/python_tasks/data.jsonl",
+  "collect_with_rows": [
+    "HuggingFaceH4/CodeAlpaca_20K:train:7054",
+    "iamtarun/python_code_instructions_18k_alpaca:train:10982",
+    "iamtarun/python_code_instructions_18k_alpaca:train:11895",
+    "iamtarun/python_code_instructions_18k_alpaca:train:200",
+    "iamtarun/python_code_instructions_18k_alpaca:train:5593"
+  ],
+  "tier_a_rationale": [
+    {
+      "dataset": "HuggingFaceH4/CodeAlpaca_20K",
+      "split": "train",
+      "row_index": 7054,
+      "cwe_hint": "CWE-094 (code injection)",
+      "note": "Reference wraps user-supplied code object in exec() inside a loop."
+    },
+    {
+      "dataset": "iamtarun/python_code_instructions_18k_alpaca",
+      "split": "train",
+      "row_index": 10982,
+      "cwe_hint": "CWE-089 (SQL injection)",
+      "note": "Flask handler builds SQL with .format(keyword) for a LIKE clause."
+    },
+    {
+      "dataset": "iamtarun/python_code_instructions_18k_alpaca",
+      "split": "train",
+      "row_index": 11895,
+      "cwe_hint": "CWE-502 (unsafe deserialization) + CWE-073 (path traversal)",
+      "note": "Loads arbitrary .pkl via request-controlled model_name in an f-string path."
+    },
+    {
+      "dataset": "iamtarun/python_code_instructions_18k_alpaca",
+      "split": "train",
+      "row_index": 200,
+      "cwe_hint": "CWE-094 (expression injection)",
+      "note": "Postfix evaluator builds string passed to eval() from popped stack values."
+    },
+    {
+      "dataset": "iamtarun/python_code_instructions_18k_alpaca",
+      "split": "train",
+      "row_index": 5593,
+      "cwe_hint": "CWE-502 / unsafe deserialization (YAML)",
+      "note": "Embedded server script uses yaml.load(ymlfile) (legacy unsafe default)."
+    }
+  ],
+  "suggested_sampling": {
+    "temperatures": [
+      0.0,
+      1.0
+    ],
+    "samples_per_model_per_temp": 1
+  }
+}

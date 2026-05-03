@@ -295,7 +295,7 @@ if __name__ == "__main__":
     parser.add_argument("--prompts", nargs="*")
     parser.add_argument("--models", nargs="*")
     parser.add_argument("--samples", type=int, default=50)
-    parser.add_argument("--temps", nargs="*", type=float, default=[0.0, 0.6, 1.0])
+    parser.add_argument("--temps", nargs="*", type=float, default=[0.0, 1.0])
     args = parser.parse_args()
 
     cfg = SamplingConfig(temperatures=args.temps, samples_per_model_per_temp=args.samples)

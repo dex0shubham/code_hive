@@ -28,6 +28,12 @@ python run.py --analyze
 python run.py --collect --samples 2 --temps 1.0 --prompts OD-01
 ```
 
+## Full Documentation
+
+Detailed research and pipeline documentation is available at:
+
+- `docs/RESEARCH_DOCUMENTATION.md`
+
 ## Project Structure
 
 ```

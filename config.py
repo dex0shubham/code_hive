@@ -32,7 +32,7 @@ MODELS = [
 
 @dataclass
 class SamplingConfig:
-    temperatures: list = field(default_factory=lambda: [0.0, 0.6, 1.0])
+    temperatures: list = field(default_factory=lambda: [0.0, 1.0])
     top_p: float = 0.9
     samples_per_model_per_temp: int = 50
     max_tokens: int = 2048

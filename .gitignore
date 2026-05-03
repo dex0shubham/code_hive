@@ -1,0 +1,57 @@
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Test / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Large research artifacts (datasets, model outputs, figures)
+results/
+
+# Local datasets: ignore bulk files; keep small JSON manifests (un-ignore must follow the broad rule)
+local_datasets/**
+!local_datasets/tier_a_pool_b_sample_manifest.json
+!local_datasets/sample_tier_a_prompts.json
+!local_datasets/sample_python_prompts.json
+
+# Hugging Face / Arrow / parquet dumps (if ever placed outside the dirs above)
+*.arrow
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+
+# Logs
+*.log
+
+# OS / editor
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/

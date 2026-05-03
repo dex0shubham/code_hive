@@ -2,15 +2,26 @@
 # Core
 httpx>=0.25.0
 numpy>=1.24.0
+python-dotenv>=1.0.0
+tqdm>=4.66.0
 
 # Embeddings (for semantic similarity metrics)
 sentence-transformers>=2.2.0
 
-# Optional: for visualization
+# Visualization & data
 matplotlib>=3.7.0
 seaborn>=0.12.0
 pandas>=2.0.0
 
-# Optional: for clustering
-hdbscan>=0.8.33
+# Clustering / dim-reduction
 scikit-learn>=1.3.0
+
+# SAST scanners for security analysis
+bandit>=1.7.5
+# semgrep>=1.50.0  # heavy (~200MB), enable manually if desired
+
+# Statistics (paired tests, etc.)
+scipy>=1.11.0
+
+# Datasets (for SecurityEval HF pull)
+datasets>=2.14.0

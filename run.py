@@ -383,7 +383,7 @@ def main():
     parser.add_argument("--analyze", action="store_true", help="Analyze collected data")
     parser.add_argument("--demo", action="store_true", help="Run demo with mock data")
     parser.add_argument("--samples", type=int, default=50)
-    parser.add_argument("--temps", nargs="*", type=float, default=[0.0, 0.6, 1.0])
+    parser.add_argument("--temps", nargs="*", type=float, default=[0.0, 1.0])
     parser.add_argument("--prompts", nargs="*", help="Prompt IDs to process")
     parser.add_argument("--models", nargs="*", help="Model names to use")
     args = parser.parse_args()

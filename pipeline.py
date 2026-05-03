@@ -118,7 +118,7 @@ def analyze_family_clustering(prompt_id, temperature=1.0, embedder=None):
 
 def analyze_temperature_effect(prompt_id, embedder=None):
     results = {}
-    for temp in [0.0, 0.6, 1.0]:
+    for temp in [0.0, 1.0]:
         intra_reports = analyze_intra_model(prompt_id, temp, embedder)
         if not intra_reports:
             continue

@@ -279,20 +279,32 @@ def check_risky_imports(code):
 
 def run_bandit(code):
     """Run Bandit on a code snippet. Returns list of issues."""
+    tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False, encoding="utf-8") as f:
             f.write(code)
             f.flush()
-            result = subprocess.run(
-                ["bandit", "-f", "json", "-q", f.name],
-                capture_output=True, text=True, timeout=10,
-            )
-            os.unlink(f.name)
-            if result.stdout:
+            tmp_path = f.name
+        # Use the active interpreter so Bandit installed in the venv is always found
+        # (avoids PATH issues on Windows where bare `bandit` may not resolve).
+        result = subprocess.run(
+            [sys.executable, "-m", "bandit", "-f", "json", "-q", tmp_path],
+            capture_output=True, text=True, timeout=20,
+        )
+        if result.stdout:
+            try:
                 data = json.loads(result.stdout)
                 return data.get("results", [])
+            except json.JSONDecodeError:
+                return []
     except Exception:
         pass
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
     return []
 
 
