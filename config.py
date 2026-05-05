@@ -47,6 +47,7 @@ PROMPT_CATEGORIES = [
     "NAMING",
     "CREATIVE_TOOL",
     "SYSTEM_DESIGN",
+    "SECURITY_ELICITING",
 ]
 
 # -- Output paths --
