@@ -87,9 +87,9 @@ try:
     try:
         from codeshield.insecure_code_detector.languages import Language  # type: ignore
         _CODESHIELD_LANGUAGE = Language
-    except ImportError:
+    except (ImportError, Exception):
         _CODESHIELD_LANGUAGE = None
-except ImportError:
+except (ImportError, Exception):
     pass
 
 # Always have the regex scanner as a final fallback
