@@ -13,12 +13,10 @@ proof_homogeneity.py (v1) and adds three reviewer-hardening features:
                            inter-LLM Vendi with that family removed. If the
                            gap to human survives every leave-out, the result
                            is not driven by a single family.
-  3. Mixed-effects model — statsmodels MixedLM
-                              vendi_norm ~ pool + (1 | prompt)
-                           per kernel, with `human` as the reference level.
-                           Reports fixed-effect coefficients, SEs, and
-                           p-values for inter-LLM, intra-LLM, and null pools
-                           against the human baseline.
+  3. Mixed model — statsmodels MixedLM (fallback: OLS + prompt FE) for
+                              vendi_norm ~ pool + prompt heterogeneity
+                           per kernel, `human` as reference pool. JSON records
+                           `model` and `fallback_reason` when MixedLM Hessian/CIs fail.
 
 The v1 file (proof_homogeneity.py) is the load-bearing module — kernels,
 Vendi, pool builders, harnesses, Pillar 1/2/3 all live there. v2 only
@@ -26,12 +24,13 @@ Vendi, pool builders, harnesses, Pillar 1/2/3 all live there. v2 only
 
 Usage
 -----
-  # Full v2 run (3 temps × 3 prompts; ~25 min on CPU with --embedder tfidf)
+  # Full v2 run (3 temps × 3 prompts) — defaults to CodeBERT on CUDA if a GPU
+  # is available, otherwise falls back to CPU automatically.
   python proof_homogeneity_v2.py \
-      --prompts AL-01 AL-03 AL-05 \
+      --prompts PB-01 PB-02 PB-03 \
       --temperatures 0.0 0.7 1.0 \
       --human-dir results/human_baseline \
-      --embedder tfidf
+      --embedder codebert --device auto
 
   # Skip the slow pillars to iterate on stats only
   python proof_homogeneity_v2.py --skip-pillar3 --temperatures 1.0
@@ -44,6 +43,13 @@ Outputs (under --out-dir)
   fig_family_ablation.png        inter-LLM Vendi with each family removed
   fig_mixed_effects.png          fixed-effect contrasts vs human
   t<TEMP>/                       per-temperature outputs (v1 pillars + figures)
+
+  Default prompts PB-01..PB-03 are curated OPEN_ENDED rows from
+  ``local_datasets/pool_b_open_ended_candidates/python_tasks/data.jsonl``
+  (manifest: ``local_datasets/homogeneity_pool_b_curated.json``). Pillar 3
+  has functional harnesses only for AL-*; with PB-* prompts Pillar 3 is
+  skipped per prompt (``no_harness``). Use ``--prompts AL-01 AL-03 AL-05``
+  for the full three-pillar pipeline on algorithmic tasks.
     summary.json
     summary.md
     fig_pillar1_vendi.png
@@ -193,15 +199,33 @@ def run_family_ablation(args, llm_at_temp: dict[str, list[dict]],
 # 3. Mixed-effects model
 # ─────────────────────────────────────────────────────────────────────
 
-def run_mixed_effects(pillar1_by_temp: dict[float, dict]) -> dict:
-    """Fit  vendi_norm ~ C(pool, ref='human') + (1 | prompt)  per kernel.
+def _summarize_fit(res) -> dict:
+    """Pull comparable inference tables from a fitted statsmodels result."""
+    params = {k: float(v) for k, v in res.params.items()}
+    pvals = {k: float(v) for k, v in res.pvalues.items()}
+    ses = {k: float(v) for k, v in res.bse.items()}
+    ci_df = res.conf_int()
+    ci_clean = {k: [float(row[0]), float(row[1])] for k, row in ci_df.iterrows()}
+    return {
+        "params": params,
+        "pvalues": pvals,
+        "stderr": ses,
+        "ci95": ci_clean,
+        "loglik": float(res.llf),
+    }
 
-    Aggregates across temperatures so the random-intercept 'prompt' captures
-    prompt-level heterogeneity. Returns per-kernel coefficient tables.
+
+def run_mixed_effects(pillar1_by_temp: dict[float, dict]) -> dict:
+    """Fit vendi_norm ~ C(pool, ref='human') + (1 | prompt) per kernel.
+
+    Path A: statsmodels MixedLM (random intercept per prompt). With very
+    few prompts, the Hessian for standard errors can be singular.
+
+    Path B: OLS with prompt dummies — same pool contrasts, prompt absorbed
+    as fixed effects. See summary fields ``model`` and ``fallback_reason``.
     """
     try:
         import statsmodels.formula.api as smf  # type: ignore
-        import statsmodels.api as sm  # type: ignore  # noqa: F401
         import pandas as pd  # type: ignore
     except ImportError as e:
         return {"status": "skipped",
@@ -239,31 +263,51 @@ def run_mixed_effects(pillar1_by_temp: dict[float, dict]) -> dict:
             categories=["human", "null", "intra_llm_mean", "inter_llm"],
             ordered=False,
         )
+        sub["prompt"] = pd.Categorical(sub["prompt"])
+
+        ml_err: str | None = None
         try:
-            model = smf.mixedlm(
+            m_mixed = smf.mixedlm(
                 "vendi_norm ~ C(pool, Treatment(reference='human'))",
-                sub, groups=sub["prompt"],
+                sub,
+                groups=sub["prompt"],
             )
-            res = model.fit(reml=True, method="lbfgs", maxiter=200)
-            params = {k: float(v) for k, v in res.params.items()}
-            pvals  = {k: float(v) for k, v in res.pvalues.items()}
-            ses    = {k: float(v) for k, v in res.bse.items()}
-            ci    = res.conf_int().to_dict()  # nested dict
-            ci_clean = {k: [float(v[0]), float(v[1])]
-                        for k, v in res.conf_int().iterrows()}
+            res = m_mixed.fit(reml=True, method="lbfgs", maxiter=200)
+            # SEs / CIs touch the Hessian — often where singularity surfaces.
+            _ = res.bse
+            _ = res.conf_int()
+            summ = _summarize_fit(res)
             out["per_kernel"][kname] = {
-                "params": params,
-                "pvalues": pvals,
-                "stderr": ses,
-                "ci95": ci_clean,
+                **summ,
+                "model": "MixedLM",
                 "n_obs": int(len(sub)),
-                "loglik": float(res.llf),
                 "n_groups": int(sub["prompt"].nunique()),
             }
         except Exception as e:
-            out["per_kernel"][kname] = {
-                "error": f"{type(e).__name__}: {str(e)[:200]}"
-            }
+            ml_err = f"{type(e).__name__}: {str(e)[:180]}"
+            try:
+                m_ols = smf.ols(
+                    "vendi_norm ~ C(pool, Treatment(reference='human')) "
+                    "+ C(prompt)",
+                    sub,
+                )
+                res_o = m_ols.fit()
+                summ = _summarize_fit(res_o)
+                out["per_kernel"][kname] = {
+                    **summ,
+                    "model": "OLS_with_prompt_FE",
+                    "fallback_reason": f"MixedLM failed: {ml_err}",
+                    "n_obs": int(len(sub)),
+                    "n_groups": int(sub["prompt"].nunique()),
+                }
+            except Exception as e2:
+                fb = ml_err if ml_err else "unknown MixedLM failure"
+                out["per_kernel"][kname] = {
+                    "error": (
+                        f"MixedLM failed ({fb}); OLS fallback failed: "
+                        f"{type(e2).__name__}: {str(e2)[:180]}"
+                    ),
+                }
     return out
 
 
@@ -522,9 +566,13 @@ def _fig_mixed_effects(plt, mixed_fx, out_dir):
         ax.set_yticks(y)
         ax.set_yticklabels(labels, fontsize=8)
         ax.set_xlabel("Coefficient (Δ vendi_norm vs human)")
-        ax.set_title(f"kernel = {kname}  (n_obs={kdata['n_obs']})")
-    fig.suptitle("Mixed-effects fixed-effect contrasts — "
-                 "values < 0 mean less diverse than humans.")
+        mkind = kdata.get("model", "")
+        suf = f"  [{mkind}]" if mkind else ""
+        ax.set_title(f"kernel = {kname}  (n_obs={kdata['n_obs']}){suf}")
+    fig.suptitle(
+        "Pool contrasts vs human (MixedLM or OLS+prompt FE) — "
+        "values < 0 mean less diverse than humans."
+    )
     fig.tight_layout()
     fig.savefig(out_dir / "fig_mixed_effects.png")
     plt.close(fig)
@@ -550,6 +598,7 @@ def write_v2_summary(out_dir: Path, args, by_temp: dict,
             "samples_per_model_for_inter": args.samples_per_model_for_inter,
             "cap_per_pool": args.cap_per_pool,
             "embedder": args.embedder,
+            "center_embeddings": getattr(args, "center_embeddings", "none"),
             "ts_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         },
         "by_temperature": {str(t): {
@@ -613,11 +662,17 @@ def write_v2_summary(out_dir: Path, args, by_temp: dict,
                              f"(Δ = {delta:+.3f})")
         lines.append("")
 
-    lines.append("## Mixed-effects model — vendi_norm ~ pool + (1 | prompt)\n")
+    lines.append(
+        "## Mixed model / OLS fallback — vendi_norm ~ pool + prompt heterogeneity\n"
+    )
     if mixed_fx.get("status") != "ok":
         lines.append(f"- skipped: {mixed_fx.get('reason', 'unknown')}")
     else:
         lines.append(
+            "Primary fit: MixedLM random intercept `(1 | prompt)`. If Hessian/CIs "
+            "are singular (common with fewer than ~5 prompts), we use equivalent "
+            "OLS with prompt fixed effects (`summary.json`: `model`, "
+            "`fallback_reason`).\n\n"
             "Fixed-effect contrasts vs the reference pool (`human`). Negative "
             "coefficient = pool less diverse than humans.\n")
         for kname, kdata in mixed_fx["per_kernel"].items():
@@ -625,6 +680,10 @@ def write_v2_summary(out_dir: Path, args, by_temp: dict,
             if "error" in kdata:
                 lines.append(f"- fit error: {kdata['error']}")
                 continue
+            mod = kdata.get("model", "unknown")
+            lines.append(f"- **model**: `{mod}`")
+            if kdata.get("fallback_reason"):
+                lines.append(f"- **fallback_reason**: {kdata['fallback_reason']}")
             params = kdata["params"]
             pvals  = kdata["pvalues"]
             cis    = kdata["ci95"]
@@ -658,26 +717,85 @@ def write_v2_summary(out_dir: Path, args, by_temp: dict,
 # 7. CLI / main
 # ─────────────────────────────────────────────────────────────────────
 
+def _resolve_device(device: str, embedder: str) -> str:
+    """Resolve --device 'auto' to 'cuda' if torch.cuda.is_available(), else 'cpu'.
+
+    For non-neural embedders (tfidf/none) the device is irrelevant; we still
+    return a concrete value for logging/JSON. We only import torch when needed
+    so tfidf-only runs don't pay the import cost or fail on torch-less envs.
+    """
+    if device != "auto":
+        if device == "cuda" and embedder in ("codebert", "unixcoder", "codet5p"):
+            try:
+                import torch  # type: ignore
+                if not torch.cuda.is_available():
+                    print("  [warn] --device cuda requested but torch.cuda."
+                          "is_available() is False; falling back to CPU.")
+                    return "cpu"
+            except Exception as e:
+                print(f"  [warn] could not import torch ({e}); falling back to CPU.")
+                return "cpu"
+        return device
+
+    # device == "auto"
+    if embedder not in ("codebert", "unixcoder", "codet5p"):
+        return "cpu"  # neural device doesn't matter for tfidf/none
+    try:
+        import torch  # type: ignore
+        if torch.cuda.is_available():
+            try:
+                name = torch.cuda.get_device_name(0)
+                print(f"  [device] auto-selected cuda  ({name})")
+            except Exception:
+                print(f"  [device] auto-selected cuda")
+            return "cuda"
+        print("  [device] auto-selected cpu (torch.cuda.is_available()=False)")
+        return "cpu"
+    except Exception as e:
+        print(f"  [device] auto -> cpu (torch import failed: {e})")
+        return "cpu"
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawTextHelpFormatter)
-    p.add_argument("--prompts", nargs="+", default=["AL-01", "AL-03", "AL-05"])
+    p.add_argument("--prompts", nargs="+", default=["PB-01", "PB-02", "PB-03"],
+                   help="Prompt IDs from prompt_suite (defaults: Pool-B-curated "
+                        "PB-01..03). Use AL-01 AL-03 AL-05 for Pillar-3 harnesses.")
     p.add_argument("--temperatures", nargs="+", type=float, default=[1.0],
                    help="One or more temperatures to sweep over.")
     p.add_argument("--raw-dir", type=Path,
                    default=ROOT / "results" / "raw_responses")
     p.add_argument("--human-dir", type=Path, default=None)
     p.add_argument("--out-dir", type=Path, default=None,
-                   help="Default: results/proof_v2/<UTC-timestamp>/")
-    p.add_argument("--device", default="cpu", choices=["cpu", "cuda"])
+                   help="Default: results/proof_v2/v2_<UTC>_<embedder>/ "
+                        "(embedder suffix avoids overwriting codebert vs tfidf runs).")
+    p.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"],
+                   help="Compute device for neural embedders (codebert/unixcoder). "
+                        "'auto' (default) uses CUDA if torch.cuda.is_available(), "
+                        "else CPU.")
     p.add_argument("--n-boot", type=int, default=1000)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--samples-per-model-for-inter", type=int, default=4)
     p.add_argument("--cap-per-pool", type=int, default=60)
-    p.add_argument("--embedder", default="tfidf",
-                   choices=["unixcoder", "codebert", "tfidf", "none"],
-                   help="Embedding kernel. tfidf is the safe default; switch to "
-                        "unixcoder/codebert if your transformers install is healthy.")
+    p.add_argument("--embedder", default="codebert",
+                   choices=["unixcoder", "codebert", "codet5p", "tfidf", "none"],
+                   help="Embedding kernel. Default is 'codebert' (microsoft/"
+                        "codebert-base) on CUDA when available. 'codet5p' "
+                        "uses Salesforce/codet5p-110m-embedding (a "
+                        "contrastively trained code retriever, recommended "
+                        "for diversity studies — its cosine has wider "
+                        "dynamic range than vanilla MLM encoders). 'tfidf' "
+                        "is a no-torch sklearn-only fallback; 'none' skips "
+                        "neural embeddings entirely (token + AST only).")
+    p.add_argument("--center-embeddings", dest="center_embeddings",
+                   default="none", choices=["none", "center", "abtt"],
+                   help="Anisotropy correction for neural embedders before "
+                        "cosine similarity. 'center' subtracts the column "
+                        "mean (BERT-Whitening step 1). 'abtt' additionally "
+                        "projects out the top principal direction "
+                        "(All-But-The-Top, Mu & Viswanath 2018). Ignored "
+                        "for tfidf/none.")
     p.add_argument("--skip-pillar3", action="store_true")
     p.add_argument("--skip-family-ablation", action="store_true")
     p.add_argument("--skip-mixed-effects", action="store_true")
@@ -691,8 +809,12 @@ def main():
     args = parse_args()
     if args.out_dir is None:
         ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-        args.out_dir = ROOT / "results" / "proof_v2" / f"v2_{ts}"
+        args.out_dir = (
+            ROOT / "results" / "proof_v2" / f"v2_{ts}_{args.embedder}"
+        )
     args.out_dir.mkdir(parents=True, exist_ok=True)
+
+    args.device = _resolve_device(args.device, args.embedder)
 
     print(f"== proof_homogeneity_v2 ==")
     print(f"  prompts:       {args.prompts}")
@@ -701,6 +823,7 @@ def main():
     print(f"  human_dir:     {args.human_dir}")
     print(f"  out_dir:       {args.out_dir}")
     print(f"  embedder:      {args.embedder}")
+    print(f"  device:        {args.device}")
     print()
 
     # Load all temperatures' LLM data; we filter per-temp inside the sweep
@@ -722,7 +845,8 @@ def main():
         return
 
     # Register kernels
-    _register_kernels(embedder=args.embedder, device=args.device)
+    _register_kernels(embedder=args.embedder, device=args.device,
+                      center=getattr(args, "center_embeddings", "none"))
     kernels = list(KERNEL_FNS.keys())
     print(f"Active kernels: {kernels}")
 

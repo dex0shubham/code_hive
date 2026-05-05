@@ -15,6 +15,8 @@ if _ROOT not in sys.path:
 import asyncio
 import json
 import os
+import random
+import re
 import time
 import hashlib
 from dataclasses import dataclass, asdict
@@ -184,11 +186,15 @@ async def call_together(client, model, prompt, cfg, temp):
     }
     t0 = time.monotonic()
     resp = await client.post(
-        "https://api.together.xyz/v1/chat/completions",
+        "https://api.together.ai/v1/chat/completions",
         headers=headers, json=body, timeout=120,
     )
     latency = (time.monotonic() - t0) * 1000
     data = resp.json()
+    if resp.status_code >= 400 or "choices" not in data or not data["choices"]:
+        error = data.get("error", data) if isinstance(data, dict) else data
+        message = error.get("message", error) if isinstance(error, dict) else error
+        raise RuntimeError(f"Together API error ({resp.status_code}): {message}")
     choice = data["choices"][0]
     usage = data.get("usage", {})
     return {
@@ -207,12 +213,66 @@ PROVIDER_CALLERS = {
     "together": call_together,
 }
 
+# Providers that have known strict rate-limits and benefit from aggressive retry
+_RETRY_PROVIDERS = {"together"}
+_MAX_RETRIES = 6
+
+
+async def _call_with_retry(caller, client, model, prompt_text, cfg, temp,
+                            *, provider: str = "", label: str = ""):
+    """Call a provider API with exponential backoff on 429 / 503 responses.
+
+    429 (rate-limit): waits based on the dynamic RPM stated in the error
+    message if present, otherwise doubles the delay each attempt, capped at
+    120 s. Jitter ±5 s is always added to spread concurrent retries.
+
+    503 (service unavailable): shorter fixed-base backoff (10 s, 15 s, …).
+
+    All other errors are re-raised immediately.
+    """
+    delay_base = 10.0
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            return await caller(client, model, prompt_text, cfg, temp)
+        except RuntimeError as exc:
+            msg = str(exc)
+            is_429 = "429" in msg
+            is_503 = "503" in msg
+            retriable = is_429 or is_503
+            if not retriable or attempt == _MAX_RETRIES:
+                raise
+            if is_429:
+                # Parse "dynamic" rate limit from Together's message, e.g.
+                # "Your dynamic rate limit is 0.666… RPM"
+                rpm_m = re.search(r"dynamic.*?rate limit is ([\d.]+) RPM",
+                                   msg, re.IGNORECASE)
+                if rpm_m:
+                    rpm = float(rpm_m.group(1))
+                    wait = (60.0 / max(rpm, 0.1)) + random.uniform(2, 8)
+                else:
+                    wait = min(delay_base * (2 ** attempt), 120.0) + random.uniform(0, 5)
+            else:  # 503
+                wait = min(delay_base * (1.5 ** attempt), 60.0) + random.uniform(0, 3)
+            wait = min(wait, 150.0)
+            reason = "rate-limit" if is_429 else "service-unavail"
+            print(f"    [{label} retry {attempt + 1}/{_MAX_RETRIES}] "
+                  f"{reason}: waiting {wait:.0f}s …")
+            await asyncio.sleep(wait)
+    raise RuntimeError("unreachable")  # never reached
+
 
 async def sample_one(client, provider, model_id, model_display, model_family,
                      prompt, cfg, temp, sample_idx):
     caller = PROVIDER_CALLERS[provider]
+    label = f"{model_display} {prompt.id} t={temp} s={sample_idx}"
     try:
-        result = await caller(client, model_id, prompt.prompt, cfg, temp)
+        if provider in _RETRY_PROVIDERS:
+            result = await _call_with_retry(
+                caller, client, model_id, prompt.prompt, cfg, temp,
+                provider=provider, label=label,
+            )
+        else:
+            result = await caller(client, model_id, prompt.prompt, cfg, temp)
         return Response(
             prompt_id=prompt.id,
             model_provider=provider,
@@ -234,8 +294,25 @@ async def sample_one(client, provider, model_id, model_display, model_family,
         return None
 
 
+def _append_responses(responses: list, out_dir: Path) -> None:
+    """Append a batch of Response objects to per-prompt JSONL files immediately.
+
+    Uses append mode so partial runs accumulate across re-runs and Ctrl+C
+    never destroys data already written in this session.
+    """
+    by_prompt: dict[str, list] = {}
+    for r in responses:
+        by_prompt.setdefault(r.prompt_id, []).append(r)
+    for pid, rs in by_prompt.items():
+        outpath = out_dir / f"{pid}.jsonl"
+        with open(outpath, "a", encoding="utf-8") as fh:
+            for r in rs:
+                fh.write(json.dumps(asdict(r)) + "\n")
+
+
 async def collect_all(cfg, prompt_ids=None, model_filter=None):
     os.makedirs(RAW_RESPONSES_DIR, exist_ok=True)
+    out_dir = Path(RAW_RESPONSES_DIR)
 
     prompts = PROMPTS
     if prompt_ids:
@@ -254,38 +331,48 @@ async def collect_all(cfg, prompt_ids=None, model_filter=None):
     print(f"  Total calls:  {total}")
     print()
 
-    all_responses = []
+    all_responses: list[Response] = []
     sem = asyncio.Semaphore(10)
+    interrupted = False
 
-    async with httpx.AsyncClient() as client:
-        for prompt in prompts:
-            print(f"[{prompt.id}] {prompt.category}: {prompt.prompt[:60]}...")
-            for provider, model_id, display, family in models:
-                for temp in cfg.temperatures:
-                    tasks = []
-                    for s in range(cfg.samples_per_model_per_temp):
-                        async def _task(p=provider, m=model_id, d=display, f=family, t=temp, si=s):
-                            async with sem:
-                                return await sample_one(client, p, m, d, f, prompt, cfg, t, si)
-                        tasks.append(_task())
+    try:
+        async with httpx.AsyncClient() as client:
+            for prompt in prompts:
+                print(f"[{prompt.id}] {prompt.category}: {prompt.prompt[:60]}...")
+                for provider, model_id, display, family in models:
+                    for temp in cfg.temperatures:
+                        tasks = []
+                        for s in range(cfg.samples_per_model_per_temp):
+                            async def _task(p=provider, m=model_id, d=display,
+                                            f=family, t=temp, si=s):
+                                async with sem:
+                                    return await sample_one(
+                                        client, p, m, d, f, prompt, cfg, t, si)
+                            tasks.append(_task())
 
-                    results = await asyncio.gather(*tasks)
-                    valid = [r for r in results if r is not None]
-                    all_responses.extend(valid)
-                    print(f"  {display} t={temp}: {len(valid)}/{len(tasks)} OK")
+                        results = await asyncio.gather(*tasks)
+                        valid = [r for r in results if r is not None]
+                        all_responses.extend(valid)
+                        # ── Incremental save: flush this batch to disk right away ──
+                        _append_responses(valid, out_dir)
+                        print(f"  {display} t={temp}: {len(valid)}/{len(tasks)} OK")
 
-            outpath = Path(RAW_RESPONSES_DIR) / f"{prompt.id}.jsonl"
-            prompt_responses = [r for r in all_responses if r.prompt_id == prompt.id]
-            with open(outpath, "w") as f:
-                for r in prompt_responses:
-                    f.write(json.dumps(asdict(r)) + "\n")
-            print(f"  Saved {len(prompt_responses)} responses -> {outpath}\n")
+                prompt_responses = [r for r in all_responses if r.prompt_id == prompt.id]
+                print(f"  Saved {len(prompt_responses)} responses -> "
+                      f"{out_dir / (prompt.id + '.jsonl')}\n")
 
-    full_path = Path(RAW_RESPONSES_DIR) / "all_responses.jsonl"
-    with open(full_path, "w") as f:
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        interrupted = True
+        print(f"\n[!] Interrupted — {len(all_responses)} responses already saved to disk.")
+
+    # Always write the merged all_responses.jsonl so downstream tools can read it
+    full_path = out_dir / "all_responses.jsonl"
+    with open(full_path, "w", encoding="utf-8") as f:
         for r in all_responses:
             f.write(json.dumps(asdict(r)) + "\n")
-    print(f"\nDone! {len(all_responses)} total responses -> {full_path}")
+
+    status = "interrupted" if interrupted else "Done"
+    print(f"\n{status}! {len(all_responses)} total responses -> {full_path}")
     return all_responses
 
 

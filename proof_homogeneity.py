@@ -246,12 +246,129 @@ def kernel_ast(codes: list[str]) -> np.ndarray:
 
 
 def kernel_codebert(codes: list[str], device: str = "cpu",
-                    max_length: int = 512, batch_size: int = 8) -> np.ndarray:
+                    max_length: int = 512, batch_size: int = 8,
+                    center: str = "none") -> np.ndarray:
     """Cosine-similarity matrix using microsoft/codebert-base. Thin wrapper
     over kernel_unixcoder with a different model id."""
     return kernel_unixcoder(codes, device=device,
                             model_name="microsoft/codebert-base",
-                            max_length=max_length, batch_size=batch_size)
+                            max_length=max_length, batch_size=batch_size,
+                            center=center)
+
+
+def _postprocess_embeddings(E: np.ndarray, mode: str = "none",
+                             abtt_k: int = 1) -> np.ndarray:
+    """Apply post-hoc anisotropy correction to a stack of embeddings.
+
+    Vanilla MLM embeddings (CodeBERT, UniXcoder) live on a narrow cone in
+    embedding space, so cosine similarity saturates near 1. Two well-known
+    one-line fixes:
+
+    - ``mode='center'``: subtract the column mean (a.k.a. "BERT-Whitening"
+      step 1; Su et al. 2021).
+    - ``mode='abtt'``: subtract the mean *and* project out the top
+      ``abtt_k`` principal directions ("All-But-The-Top"; Mu & Viswanath,
+      ICLR 2018).
+    - ``mode='none'``: no change (default; backward compatible).
+
+    Returns a fresh ndarray with the same shape as ``E`` (still un-normalized).
+    The caller is responsible for L2-normalizing rows before computing cosine.
+    """
+    if mode == "none" or E.size == 0:
+        return E
+    Ec = E - E.mean(axis=0, keepdims=True)
+    if mode == "center":
+        return Ec
+    if mode == "abtt":
+        # Project out top-k principal directions of the centered matrix.
+        try:
+            # Use SVD on the centered matrix; thin SVD is fine.
+            _, _, Vt = np.linalg.svd(Ec, full_matrices=False)
+            # Top-k right-singular vectors are the dominant directions in
+            # feature space.
+            top = Vt[: max(1, abtt_k)]            # (k, D)
+            proj = Ec @ top.T @ top               # (N, D) projection onto top-k
+            return Ec - proj
+        except np.linalg.LinAlgError:
+            return Ec
+    raise ValueError(f"unknown center mode: {mode!r}")
+
+
+def kernel_codet5p_embed(codes: list[str], device: str = "cpu",
+                          model_name: str = "Salesforce/codet5p-110m-embedding",
+                          max_length: int = 512, batch_size: int = 16,
+                          center: str = "none") -> np.ndarray:
+    """Cosine-similarity matrix from Salesforce CodeT5+ 110M code embedder.
+
+    CodeT5+ (Wang et al. 2023) provides a T5-encoder-based **code retriever**
+    that was trained with contrastive losses on (NL, code) and (code, code)
+    pairs, so cosine on its 256-d output is a meaningful similarity — unlike
+    the MLM-only CodeBERT/UniXcoder, whose pairwise cosines saturate near 1.
+
+    The model exposes a custom ``EmbeddingModel`` class returning a
+    ``[batch, 256]`` tensor directly (no extra pooling needed); we still
+    handle the generic ``last_hidden_state`` case as a fallback.
+
+    ``center`` ∈ {``'none'``, ``'center'``, ``'abtt'``} optionally subtracts
+    the global mean (and the top principal direction for ``'abtt'``) before
+    L2-normalization, which further reduces residual anisotropy.
+    """
+    import torch  # type: ignore
+
+    if not codes:
+        return np.zeros((0, 0))
+
+    from transformers import AutoConfig, AutoModel, AutoTokenizer  # type: ignore
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+
+    # Salesforce/codet5p-110m-embedding ships a custom ``CodeT5pEmbeddingConfig``
+    # that, on recent transformers versions, omits attributes the upstream
+    # ``T5Stack.__init__`` now reads (``is_decoder``, ``is_encoder_decoder``,
+    # ``num_layers``, ``num_decoder_layers``). We backfill safe defaults so the
+    # model loads without monkey-patching the cached source file.
+    config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+    for attr, default in (
+        ("is_decoder", False),
+        ("is_encoder_decoder", False),
+        ("use_cache", False),
+        ("num_layers", getattr(config, "num_hidden_layers", 12)),
+        ("num_decoder_layers", 0),
+        ("output_hidden_states", False),
+        ("output_attentions", False),
+    ):
+        if not hasattr(config, attr):
+            setattr(config, attr, default)
+
+    model = AutoModel.from_pretrained(
+        model_name, config=config, trust_remote_code=True)
+    model = model.to(device).eval()
+
+    embs: list[np.ndarray] = []
+    with torch.no_grad():
+        for i in range(0, len(codes), batch_size):
+            batch = [c if c else " " for c in codes[i:i + batch_size]]
+            enc = tokenizer(batch, padding=True, truncation=True,
+                            max_length=max_length, return_tensors="pt")
+            enc = {k: v.to(device) for k, v in enc.items()}
+            out = model(**enc)
+            if isinstance(out, torch.Tensor):
+                pooled = out
+            elif hasattr(out, "last_hidden_state"):
+                mask = enc["attention_mask"].unsqueeze(-1).float()
+                pooled = ((out.last_hidden_state * mask).sum(1)
+                          / mask.sum(1).clamp(min=1))
+            else:
+                # Tuple-like: first element is typically the embedding tensor
+                pooled = out[0]
+            embs.append(pooled.detach().cpu().numpy())
+    E = np.vstack(embs)
+    E = _postprocess_embeddings(E, mode=center)
+    norm = np.linalg.norm(E, axis=1, keepdims=True)
+    norm = np.clip(norm, 1e-10, None)
+    En = E / norm
+    K = En @ En.T
+    return np.clip(K, 0.0, 1.0)
 
 
 def kernel_tfidf(codes: list[str],
@@ -297,7 +414,8 @@ def kernel_tfidf(codes: list[str],
 
 def kernel_unixcoder(codes: list[str], device: str = "cpu",
                      model_name: str = "microsoft/unixcoder-base",
-                     max_length: int = 512, batch_size: int = 8) -> np.ndarray:
+                     max_length: int = 512, batch_size: int = 8,
+                     center: str = "none") -> np.ndarray:
     """Cosine-similarity matrix of mean-pooled UniXcoder embeddings.
 
     UniXcoder (Guo et al. 2022) is a RoBERTa-architecture model fine-tuned on
@@ -374,6 +492,7 @@ def kernel_unixcoder(codes: list[str], device: str = "cpu",
             pooled = (out.last_hidden_state * mask).sum(1) / mask.sum(1).clamp(min=1)
             embs.append(pooled.cpu().numpy())
     E = np.vstack(embs)
+    E = _postprocess_embeddings(E, mode=center)
     norm = np.linalg.norm(E, axis=1, keepdims=True)
     norm = np.clip(norm, 1e-10, None)
     En = E / norm
@@ -494,15 +613,25 @@ def build_pools(prompt_id: str,
 KERNEL_FNS: dict[str, Callable[..., np.ndarray]] = {}
 
 
-def _register_kernels(embedder: str, device: str):
+def _register_kernels(embedder: str, device: str, center: str = "none"):
     """Register the kernels actually computed for Pillar 1.
-    `embedder` ∈ {"unixcoder", "codebert", "tfidf", "none"}."""
+
+    ``embedder`` ∈ {"unixcoder", "codebert", "codet5p", "tfidf", "none"}.
+
+    ``center`` ∈ {"none", "center", "abtt"} controls anisotropy correction
+    for *neural* embedders. Ignored for tfidf/none/token/ast kernels.
+    """
     KERNEL_FNS["token"] = lambda codes: kernel_token(codes, n=3)
     KERNEL_FNS["ast"] = lambda codes: kernel_ast(codes)
     if embedder == "unixcoder":
-        KERNEL_FNS["unixcoder"] = lambda codes: kernel_unixcoder(codes, device=device)
+        KERNEL_FNS["unixcoder"] = lambda codes: kernel_unixcoder(
+            codes, device=device, center=center)
     elif embedder == "codebert":
-        KERNEL_FNS["codebert"] = lambda codes: kernel_codebert(codes, device=device)
+        KERNEL_FNS["codebert"] = lambda codes: kernel_codebert(
+            codes, device=device, center=center)
+    elif embedder == "codet5p":
+        KERNEL_FNS["codet5p"] = lambda codes: kernel_codet5p_embed(
+            codes, device=device, center=center)
     elif embedder == "tfidf":
         KERNEL_FNS["tfidf"] = lambda codes: kernel_tfidf(codes)
     elif embedder == "none":
@@ -1062,11 +1191,26 @@ def _make_fig1(plt, pillar1, kernels, prompts, out_dir):
     pool_colors = {"null": "#888", "human": "#1f77b4",
                    "intra_llm_mean": "#2ca02c", "inter_llm": "#d62728"}
 
+    # Only plot pools that actually exist (e.g. omit ``human`` when no
+    # ``--human-dir`` was passed — avoids empty legend slots / invisible bars).
+    def _pool_has_any_data(pool_name: str) -> bool:
+        for pid in prompts:
+            for kname in kernels:
+                pk = pillar1["per_prompt"][pid][kname].get(pool_name)
+                if pk is not None:
+                    return True
+        return False
+
+    visible_pools = [pl for pl in pool_labels if _pool_has_any_data(pl)]
+    if not visible_pools:
+        visible_pools = ["null", "inter_llm"]  # should never happen
+
     def _plot_row(row_axes, value_key, ci_key, ylabel, hline):
         for ax, kname in zip(row_axes, kernels):
             x = np.arange(len(prompts))
             w = 0.18
-            for i, pl in enumerate(pool_labels):
+            n_vis = len(visible_pools)
+            for i, pl in enumerate(visible_pools):
                 vals, lo, hi = [], [], []
                 for pid in prompts:
                     pk = pillar1["per_prompt"][pid][kname].get(pl)
@@ -1081,7 +1225,7 @@ def _make_fig1(plt, pillar1, kernels, prompts, out_dir):
                         ci = pk.get(ci_key, [v, v])
                         lo.append(max(0.0, v - ci[0]))
                         hi.append(max(0.0, ci[1] - v))
-                offset = (i - 1.5) * w
+                offset = (i - (n_vis - 1) / 2.0) * w
                 ax.bar(x + offset, vals, w, label=pl,
                        color=pool_colors[pl], alpha=0.85,
                        yerr=[lo, hi], capsize=2)
@@ -1097,8 +1241,13 @@ def _make_fig1(plt, pillar1, kernels, prompts, out_dir):
     _plot_row(axes[1], "vendi_norm", "ci_norm",
               "Vendi / N  (per-sample uniqueness)", None)
     axes[0][-1].legend(frameon=False, fontsize=7, loc="upper right")
-    fig.suptitle("Pillar 1 — top: raw Vendi (size-confounded);  "
-                 "bottom: normalized (size-fair)")
+    title = (
+        "Pillar 1 — top: raw Vendi (size-confounded);  "
+        "bottom: normalized (size-fair)"
+    )
+    if "human" not in visible_pools:
+        title += "\n(no human pool — pass --human-dir with <prompt_id>.jsonl)"
+    fig.suptitle(title)
     fig.tight_layout()
     fig.savefig(out_dir / "fig_pillar1_vendi.png")
     plt.close(fig)
@@ -1321,12 +1470,22 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--cap-per-pool", type=int, default=60,
                    help="Maximum codes per pool (controls runtime)")
     p.add_argument("--embedder", default="unixcoder",
-                   choices=["unixcoder", "codebert", "tfidf", "none"],
+                   choices=["unixcoder", "codebert", "codet5p", "tfidf", "none"],
                    help="Embedding kernel for Pillar 1. "
-                        "'unixcoder' (default) and 'codebert' need a healthy "
-                        "transformers/torch install. 'tfidf' is sklearn-only "
-                        "and works without GPU/torch. 'none' skips embeddings "
-                        "entirely (token + AST kernels only).")
+                        "'unixcoder' (default), 'codebert' and 'codet5p' need a "
+                        "healthy transformers/torch install. 'codet5p' uses "
+                        "Salesforce/codet5p-110m-embedding (a contrastively "
+                        "trained code retriever, recommended for diversity). "
+                        "'tfidf' is sklearn-only and works without GPU/torch. "
+                        "'none' skips embeddings entirely (token + AST only).")
+    p.add_argument("--center-embeddings", dest="center_embeddings",
+                   default="none", choices=["none", "center", "abtt"],
+                   help="Anisotropy correction for neural embedders before "
+                        "cosine similarity. 'center' subtracts the column "
+                        "mean (BERT-Whitening step 1). 'abtt' additionally "
+                        "projects out the top principal direction "
+                        "(All-But-The-Top, Mu & Viswanath 2018). Ignored "
+                        "for tfidf/none.")
     p.add_argument("--skip-embedding", dest="embedder",
                    action="store_const", const="none",
                    help="Alias for --embedder none.")
@@ -1407,7 +1566,8 @@ def main():
               f"human={len(p.human_codes)}  null={len(p.null_codes)}")
 
     # ── Register kernels ──
-    _register_kernels(embedder=args.embedder, device=args.device)
+    _register_kernels(embedder=args.embedder, device=args.device,
+                      center=getattr(args, "center_embeddings", "none"))
     kernels = list(KERNEL_FNS.keys())
     print(f"  embedder:     {args.embedder}")
     print(f"Active kernels: {kernels}")

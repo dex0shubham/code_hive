@@ -13,21 +13,24 @@ MODELS = [
     # known-good control
     "deepseek-ai/DeepSeek-V3",
 
-    # Llama-3.3 variants (serverless candidates)
+    # Serverless (default API key) — use *-Turbo / *-FP8 / gpt-oss; bare
+    # Llama-3.3-70B-Instruct and Qwen2.5-Coder-32B-Instruct are dedicated-only.
     "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+    "Qwen/Qwen3-Coder-Next-FP8",
+    "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
+    "openai/gpt-oss-120b",
+
+    # Llama-3.3 / Llama-3.1 (may be dedicated-only on some accounts)
     "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
     "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
     "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
 
-    # Qwen Coder variants
-    "Qwen/Qwen2.5-Coder-32B-Instruct-Turbo",
+    # Qwen Coder (32B / 30B often dedicated-only)
+    "Qwen/Qwen2.5-Coder-32B-Instruct",
     "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-    "Qwen/Qwen2.5-72B-Instruct-Turbo",
-    "Qwen/Qwen2.5-7B-Instruct-Turbo",
 
-    # CodeLlama replacements
-    "deepseek-ai/DeepSeek-Coder-V2-Instruct",
-    "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
+    # Legacy CodeLlama (typically dedicated-only if listed)
+    "codellama/CodeLlama-70b-Instruct-hf",
 
     # Other reasonable additions
     "deepseek-ai/DeepSeek-R1",
@@ -47,7 +50,7 @@ def main():
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 5}
         try:
-            r = httpx.post("https://api.together.xyz/v1/chat/completions",
+            r = httpx.post("https://api.together.ai/v1/chat/completions",
                            headers=headers, json=body, timeout=15)
             ok = (r.status_code == 200) and ("choices" in r.text)
             mark = "OK " if ok else "BAD"

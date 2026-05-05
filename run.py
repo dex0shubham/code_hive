@@ -219,7 +219,7 @@ class Cache:
                 if now - t < self.ttl
             }
 ''',
-        "Qwen2.5-Coder": '''
+        "Qwen3-Coder-Next": '''
 import time
 from collections import OrderedDict
 from threading import Lock
@@ -268,7 +268,7 @@ class LRUCacheWithTTL:
         "Claude Sonnet 4": ("anthropic", "claude-sonnet-4",  "Anthropic"),
         "Gemini 2.5 Pro":  ("google",    "gemini-2.5-pro",   "Google"),
         "DeepSeek-V3":     ("together",  "deepseek-v3",      "DeepSeek"),
-        "Qwen2.5-Coder":   ("together",  "qwen-coder",       "Qwen"),
+        "Qwen3-Coder-Next": ("together", "Qwen/Qwen3-Coder-Next-FP8", "Qwen"),
     }
 
     for model_name, code in cache_implementations.items():

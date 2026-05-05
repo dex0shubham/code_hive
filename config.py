@@ -23,9 +23,9 @@ MODELS = [
     ("google",    "gemini-2.5-flash",                     "Gemini 2.5 Flash",   "Google"),
     ("google",    "gemini-2.5-pro",                       "Gemini 2.5 Pro",     "Google"),
     ("together",  "deepseek-ai/DeepSeek-V3",             "DeepSeek-V3",        "DeepSeek"),
-    ("together",  "Qwen/Qwen2.5-Coder-32B-Instruct",    "Qwen2.5-Coder",     "Qwen"),
-    ("together",  "meta-llama/Llama-3.3-70B-Instruct",   "Llama-3.3-70B",     "Meta"),
-    ("together",  "codellama/CodeLlama-70b-Instruct-hf", "CodeLlama-70B",     "Meta"),
+    ("together",  "Qwen/Qwen3-Coder-Next-FP8",           "Qwen3-Coder-Next",  "Qwen"),
+    ("together",  "meta-llama/Llama-3.3-70B-Instruct-Turbo", "Llama-3.3-70B",   "Meta"),
+    ("together",  "openai/gpt-oss-120b",                  "GPT-OSS-120B",      "OpenAI"),
 ]
 
 # -- Sampling parameters --

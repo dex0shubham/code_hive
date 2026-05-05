@@ -1,7 +1,8 @@
 """
 Code Hivemind — Prompt Suite
 =============================
-30 open-ended coding prompts across 6 categories.
+30 built-in open-ended coding prompts across 6 categories, plus optional
+Pool-B-curated tasks loaded from ``local_datasets/homogeneity_pool_b_curated.json``.
 
 KEY DESIGN PRINCIPLE: Each prompt must admit MANY valid solutions.
 Unlike HumanEval (single correct answer), these tasks have unbounded
@@ -12,7 +13,9 @@ We follow the Infinity-Chat methodology: real-world-style queries
 that a developer might actually ask an LLM.
 """
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 @dataclass
 class CodePrompt:
@@ -24,7 +27,7 @@ class CodePrompt:
     notes: str             # what we expect to vary
 
 
-PROMPTS: list[CodePrompt] = [
+_PROMPTS_CORE: list[CodePrompt] = [
 
     # ═══════════════════════════════════════════════════════════════
     # CATEGORY 1: OPEN_DESIGN — "Build X" with many valid designs
@@ -390,6 +393,49 @@ def calculate_shipping(weight, destination, is_prime, is_fragile):
         notes="requests vs httpx vs aiohttp, BS4 vs lxml, class hierarchy, config approach"
     ),
 ]
+
+
+def _load_homogeneity_pool_b_curated() -> list[CodePrompt]:
+    """Append prompts from ``local_datasets/homogeneity_pool_b_curated.json`` if present.
+
+    Those rows are hand-picked from ``pool_b_open_ended_candidates/python_tasks/data.jsonl``
+    (label=OPEN_ENDED, high ``open_ended_dimensions`` count). Missing file is a no-op so
+    installs without the large JSONL still work with the built-in AL-* / OD-* suite only.
+    """
+    path = Path(__file__).resolve().parent / "local_datasets" / "homogeneity_pool_b_curated.json"
+    if not path.is_file():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    out: list[CodePrompt] = []
+    for item in data.get("prompts", []):
+        pid = (item.get("id") or "").strip()
+        text = (item.get("prompt") or "").strip()
+        if not pid or not text:
+            continue
+        ds = item.get("source_dataset", "")
+        spl = item.get("source_split", "")
+        idx = item.get("source_row_index", "")
+        notes = (
+            f"pool_b_curated source={ds} split={spl} row_index={idx} "
+            f"openness_score={item.get('openness_score')!r}"
+        )
+        out.append(
+            CodePrompt(
+                id=pid,
+                category=str(item.get("category") or "POOL_B_CURATED"),
+                prompt=text,
+                language=str(item.get("language") or "python"),
+                expected_diversity=str(item.get("expected_diversity") or "high"),
+                notes=notes,
+            )
+        )
+    return out
+
+
+PROMPTS = _PROMPTS_CORE + _load_homogeneity_pool_b_curated()
 
 
 # ── System prompt ──────────────────────────────────────────────────
