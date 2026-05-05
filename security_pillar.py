@@ -442,59 +442,86 @@ def _signature_jaccard_kernel(sigs: list[tuple]) -> np.ndarray:
     return K
 
 
+def _compute_s2_metrics(rows: list[dict]) -> dict:
+    """Compute the Vendi + exact-match suite over a list of scan rows."""
+    n = len(rows)
+    if n == 0:
+        return {"n": 0, "vendi_pattern_indicator": 0.0,
+                "vendi_pattern_indicator_norm": 0.0,
+                "vendi_pattern_jaccard": 0.0, "vendi_pattern_jaccard_norm": 0.0,
+                "vendi_cwe_only": 0.0, "vendi_cwe_only_norm": 0.0,
+                "exact_pattern_match_rate": 0.0,
+                "n_unique_patterns": 0, "n_unique_cwe_sets": 0,
+                "top_patterns": []}
+    sigs_pattern = [r["pattern_signature"] for r in rows]
+    sigs_cwe     = [tuple(sorted(r["cwe_set"])) for r in rows]
+    K_ind = _signature_indicator_kernel(sigs_pattern)
+    K_jac = _signature_jaccard_kernel(sigs_pattern)
+    K_cwe = _signature_indicator_kernel(sigs_cwe)
+    v_ind = vendi_score(K_ind); v_jac = vendi_score(K_jac); v_cwe = vendi_score(K_cwe)
+    sig_counts = Counter(sigs_pattern); cwe_counts = Counter(sigs_cwe)
+    n_pairs = n * (n - 1) // 2 if n > 1 else 0
+    n_exact_pairs = sum(c * (c - 1) // 2 for c in sig_counts.values())
+    exact_match_rate = n_exact_pairs / n_pairs if n_pairs else 0.0
+    return {
+        "n": n,
+        "vendi_pattern_indicator": float(v_ind),
+        "vendi_pattern_indicator_norm": float(v_ind) / n,
+        "vendi_pattern_jaccard": float(v_jac),
+        "vendi_pattern_jaccard_norm": float(v_jac) / n,
+        "vendi_cwe_only": float(v_cwe),
+        "vendi_cwe_only_norm": float(v_cwe) / n,
+        "exact_pattern_match_rate": float(exact_match_rate),
+        "n_unique_patterns": len(sig_counts),
+        "n_unique_cwe_sets": len(cwe_counts),
+        "top_patterns": [
+            {"signature": list(sig), "count": c}
+            for sig, c in sig_counts.most_common(5)
+        ],
+    }
+
+
 def pillar_s2(scan_results: list[dict]) -> dict:
     """For each prompt, compute Vendi/N over per-sample CWE-pattern signatures
-    (cross-model pool: 1+ samples per model). Lower Vendi/N = greater
-    cross-model agreement on the *same exploitable pattern* = systemic risk.
-
-    We report two flavours:
-      - Indicator kernel  -> "exact CWE-pattern match rate" (Spracklen-style)
-      - Jaccard kernel    -> partial-credit pattern agreement
+    in TWO modes:
+      - **all-samples**: every sample in the prompt's pool. Inflated by
+        clean<->clean trivial matches when most samples have no findings.
+      - **vuln-only** (the headline number for the paper): restricted to
+        is_vulnerable=True. Answers "AMONG samples that flagged a finding,
+        what fraction of cross-model pairs share the SAME (CWE, sink)?".
+    Each mode reports indicator + Jaccard + CWE-only kernels.
     """
     by_prompt: dict[str, list[dict]] = defaultdict(list)
     for r in scan_results:
         by_prompt[r["prompt_id"]].append(r)
 
-    out: dict = {"per_prompt": {}, "kernels": ["pattern_indicator", "pattern_jaccard", "cwe_only"]}
+    out: dict = {"per_prompt": {},
+                 "kernels": ["pattern_indicator", "pattern_jaccard", "cwe_only"],
+                 "modes": ["all", "vuln_only"]}
     for pid, rows in sorted(by_prompt.items()):
-        sigs_pattern = [r["pattern_signature"] for r in rows]
-        sigs_cwe     = [tuple(sorted(r["cwe_set"])) for r in rows]
-        n = len(rows)
-
-        # Indicator kernel
-        K_ind = _signature_indicator_kernel(sigs_pattern)
-        v_ind = vendi_score(K_ind)
-        # Jaccard kernel
-        K_jac = _signature_jaccard_kernel(sigs_pattern)
-        v_jac = vendi_score(K_jac)
-        # CWE-set only (coarser, like Spracklen on package names)
-        K_cwe = _signature_indicator_kernel(sigs_cwe)
-        v_cwe = vendi_score(K_cwe)
-
-        # Counts of unique patterns
-        sig_counts = Counter(sigs_pattern)
-        cwe_counts = Counter(sigs_cwe)
-
-        # The single number that headlines: fraction of pairs with EXACT pattern match
-        n_pairs = n * (n - 1) // 2 if n > 1 else 0
-        n_exact_pairs = sum(c * (c - 1) // 2 for c in sig_counts.values())
-        exact_match_rate = n_exact_pairs / n_pairs if n_pairs else 0.0
+        all_metrics  = _compute_s2_metrics(rows)
+        vuln_rows    = [r for r in rows if r.get("is_vulnerable")]
+        vuln_metrics = _compute_s2_metrics(vuln_rows) if len(vuln_rows) >= 2 else None
 
         out["per_prompt"][pid] = {
-            "n": n,
-            "vendi_pattern_indicator": float(v_ind),
-            "vendi_pattern_indicator_norm": float(v_ind) / n if n else 0.0,
-            "vendi_pattern_jaccard": float(v_jac),
-            "vendi_pattern_jaccard_norm": float(v_jac) / n if n else 0.0,
-            "vendi_cwe_only": float(v_cwe),
-            "vendi_cwe_only_norm": float(v_cwe) / n if n else 0.0,
-            "exact_pattern_match_rate": float(exact_match_rate),
-            "n_unique_patterns": len(sig_counts),
-            "n_unique_cwe_sets": len(cwe_counts),
-            "top_patterns": [
-                {"signature": list(sig), "count": c}
-                for sig, c in sig_counts.most_common(5)
-            ],
+            # headline summary
+            "n": len(rows),
+            "n_vulnerable": len(vuln_rows),
+            "vuln_rate": len(vuln_rows) / len(rows) if rows else 0.0,
+            # all-samples mode (kept for backward compat)
+            "vendi_pattern_indicator": all_metrics["vendi_pattern_indicator"],
+            "vendi_pattern_indicator_norm": all_metrics["vendi_pattern_indicator_norm"],
+            "vendi_pattern_jaccard": all_metrics["vendi_pattern_jaccard"],
+            "vendi_pattern_jaccard_norm": all_metrics["vendi_pattern_jaccard_norm"],
+            "vendi_cwe_only": all_metrics["vendi_cwe_only"],
+            "vendi_cwe_only_norm": all_metrics["vendi_cwe_only_norm"],
+            "exact_pattern_match_rate": all_metrics["exact_pattern_match_rate"],
+            "n_unique_patterns": all_metrics["n_unique_patterns"],
+            "n_unique_cwe_sets": all_metrics["n_unique_cwe_sets"],
+            "top_patterns": all_metrics["top_patterns"],
+
+            # vuln-only mode — the load-bearing number for the paper
+            "vuln_only": vuln_metrics,
         }
     return out
 
@@ -502,24 +529,95 @@ def pillar_s2(scan_results: list[dict]) -> dict:
 # ── Pillar S3: slopsquatting ─────────────────────────────────────────────────
 
 _STDLIB_FALLBACK = {
-    "abc","argparse","ast","asyncio","base64","bisect","calendar","cmath",
-    "collections","concurrent","configparser","contextlib","copy","csv",
-    "ctypes","dataclasses","datetime","decimal","difflib","dis","email",
-    "enum","errno","fileinput","fnmatch","fractions","ftplib","functools",
-    "gc","getpass","gettext","glob","gzip","hashlib","heapq","hmac","html",
-    "http","imaplib","importlib","inspect","io","ipaddress","itertools",
-    "json","keyword","linecache","locale","logging","lzma","math","mimetypes",
-    "mmap","multiprocessing","netrc","numbers","operator","os","pathlib",
-    "pdb","pickle","pkgutil","platform","plistlib","poplib","posixpath",
-    "pprint","profile","pstats","queue","random","re","reprlib","resource",
-    "sched","secrets","select","shelve","shlex","shutil","signal","site",
-    "smtplib","socket","socketserver","sqlite3","ssl","stat","statistics",
-    "string","struct","subprocess","sys","sysconfig","syslog","tabnanny",
-    "tarfile","tempfile","textwrap","threading","time","timeit","tkinter",
-    "token","tokenize","tomllib","trace","traceback","tracemalloc","tty",
-    "types","typing","unicodedata","unittest","urllib","uuid","venv","warnings",
-    "wave","weakref","webbrowser","winreg","winsound","wsgiref","xml","xmlrpc",
-    "zipfile","zipimport","zlib","__future__","builtins","html5lib",
+    # Core Python 3 stdlib (top-level imports only). Keep alphabetical.
+    "__future__","_thread","abc","aifc","argparse","array","ast","asynchat",
+    "asyncio","asyncore","atexit","audioop","base64","bdb","binascii","binhex",
+    "bisect","builtins","bz2","calendar","cgi","cgitb","chunk","cmath","cmd",
+    "code","codecs","codeop","collections","colorsys","compileall","concurrent",
+    "configparser","contextlib","contextvars","copy","copyreg","crypt","csv",
+    "ctypes","curses","dataclasses","datetime","dbm","decimal","difflib","dis",
+    "distutils","doctest","email","encodings","ensurepip","enum","errno",
+    "faulthandler","fcntl","filecmp","fileinput","fnmatch","fractions","ftplib",
+    "functools","gc","genericpath","getopt","getpass","gettext","glob","graphlib",
+    "grp","gzip","hashlib","heapq","hmac","html","http","idlelib","imaplib",
+    "imghdr","imp","importlib","inspect","io","ipaddress","itertools","json",
+    "keyword","lib2to3","linecache","locale","logging","lzma","mailbox","mailcap",
+    "marshal","math","mimetypes","mmap","modulefinder","msilib","msvcrt",
+    "multiprocessing","netrc","nis","nntplib","ntpath","numbers","operator",
+    "optparse","os","ossaudiodev","parser","pathlib","pdb","pickle","pickletools",
+    "pipes","pkgutil","platform","plistlib","poplib","posix","posixpath","pprint",
+    "profile","pstats","pty","pwd","py_compile","pyclbr","pydoc","queue","quopri",
+    "random","re","readline","reprlib","resource","rlcompleter","runpy","sched",
+    "secrets","select","selectors","shelve","shlex","shutil","signal","site",
+    "smtpd","smtplib","sndhdr","socket","socketserver","spwd","sqlite3","sre_compile",
+    "sre_constants","sre_parse","ssl","stat","statistics","string","stringprep",
+    "struct","subprocess","sunau","symbol","symtable","sys","sysconfig","syslog",
+    "tabnanny","tarfile","telnetlib","tempfile","termios","test","textwrap",
+    "threading","time","timeit","tkinter","token","tokenize","tomllib","trace",
+    "traceback","tracemalloc","tty","turtle","turtledemo","types","typing",
+    "unicodedata","unittest","urllib","uu","uuid","venv","warnings","wave",
+    "weakref","webbrowser","winreg","winsound","wsgiref","xdrlib","xml","xmlrpc",
+    "zipapp","zipfile","zipimport","zlib","zoneinfo",
+    # Common-but-non-stdlib that ship with most Python distributions
+    "html5lib","setuptools","pip","wheel","pkg_resources",
+}
+
+# Canonical "import name -> PyPI package name" map. When an import doesn't
+# resolve directly on PyPI, we retry with the alias before flagging as a
+# hallucination. This corrects the most common false positives:
+#   yaml      -> pyyaml
+#   cv2       -> opencv-python
+#   sklearn   -> scikit-learn
+#   PIL       -> Pillow
+#   bs4       -> beautifulsoup4
+#   ...
+_PYPI_ALIAS_MAP = {
+    "yaml": "pyyaml",
+    "PIL": "Pillow",
+    "cv2": "opencv-python",
+    "sklearn": "scikit-learn",
+    "skimage": "scikit-image",
+    "bs4": "beautifulsoup4",
+    "dateutil": "python-dateutil",
+    "dotenv": "python-dotenv",
+    "magic": "python-magic",
+    "Crypto": "pycryptodome",
+    "OpenSSL": "pyOpenSSL",
+    "jwt": "PyJWT",
+    "google": "google-cloud-core",       # heuristic
+    "googleapiclient": "google-api-python-client",
+    "discord": "discord.py",
+    "telegram": "python-telegram-bot",
+    "serial": "pyserial",
+    "wx": "wxPython",
+    "win32com": "pywin32",
+    "win32api": "pywin32",
+    "win32gui": "pywin32",
+    "pythoncom": "pywin32",
+    "pyrogram": "Pyrogram",
+    "redis": "redis",
+    "psutil": "psutil",
+    "msrest": "msrest",
+    "msal": "msal",
+    "attr": "attrs",
+    "tomli": "tomli",
+    "termcolor": "termcolor",
+    "pip_audit": "pip-audit",
+    "lxml": "lxml",
+    "PyQt5": "PyQt5",
+    "PyQt6": "PyQt6",
+    "PySide2": "PySide2",
+    "PySide6": "PySide6",
+    "kivy": "Kivy",
+    "OpenGL": "PyOpenGL",
+    "tensorflow": "tensorflow",
+    "torch": "torch",
+    "transformers": "transformers",
+    "huggingface_hub": "huggingface-hub",
+    "huggingface_cli": "huggingface_hub",  # the canonical Spracklen example
+    "stripe": "stripe",
+    "boto3": "boto3",
+    "botocore": "botocore",
 }
 
 
@@ -583,6 +681,20 @@ def pillar_s3(scan_results: list[dict], live_check: bool = False,
                     meta = package_metadata(imp)
                     seen_meta[imp] = meta
                 if not meta["exists"]:
+                    # Before flagging, retry with the canonical PyPI-package
+                    # alias if we know one (e.g., yaml -> pyyaml). This
+                    # eliminates the most common false positives where the
+                    # import name differs from the PyPI package name.
+                    aliased = _PYPI_ALIAS_MAP.get(imp)
+                    if aliased:
+                        alias_meta = seen_meta.get(aliased)
+                        if alias_meta is None:
+                            alias_meta = package_metadata(aliased)
+                            seen_meta[aliased] = alias_meta
+                        if alias_meta.get("exists"):
+                            # Real package with a different import name — not
+                            # a hallucination. Skip.
+                            continue
                     rec = {
                         "prompt_id": pid, "sample_idx": sample_idx,
                         "model": model, "package": imp,
@@ -764,25 +876,46 @@ def _make_fig_s2(plt, s2, out_dir):
     if not pp:
         return
     prompts = list(pp.keys())
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.5))
-    ind = [pp[p]["vendi_pattern_indicator_norm"] for p in prompts]
-    jac = [pp[p]["vendi_pattern_jaccard_norm"]  for p in prompts]
-    cwe = [pp[p]["vendi_cwe_only_norm"]         for p in prompts]
-    x = np.arange(len(prompts)); w = 0.27
-    ax1.bar(x - w, ind, w, color="#d62728", alpha=0.85, label="exact pattern (indicator)")
-    ax1.bar(x,     jac, w, color="#ff7f0e", alpha=0.85, label="pattern Jaccard")
-    ax1.bar(x + w, cwe, w, color="#1f77b4", alpha=0.85, label="CWE-set only")
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.5))
+    x = np.arange(len(prompts)); w = 0.4
+
+    # ── Left panel: exact-pattern-match rate, ALL vs VULN-ONLY ──
+    em_all  = [pp[p]["exact_pattern_match_rate"] for p in prompts]
+    em_vuln = [(pp[p]["vuln_only"] or {}).get("exact_pattern_match_rate", 0.0)
+               if pp[p].get("vuln_only") else None
+               for p in prompts]
+    em_vuln_plot = [v if v is not None else 0.0 for v in em_vuln]
+
+    ax1.bar(x - w/2, em_all, w, color="#bbbbbb", alpha=0.85,
+            label="all samples (incl. clean<->clean trivial matches)")
+    ax1.bar(x + w/2, em_vuln_plot, w, color="#d62728", alpha=0.85,
+            label="vulnerable samples only (paper headline)")
+    # Mark prompts where vuln-only is undefined (n_vulnerable < 2)
+    for i, v in enumerate(em_vuln):
+        if v is None:
+            ax1.text(x[i] + w/2, 0.02, "n<2", ha="center", va="bottom",
+                     fontsize=6, color="#666")
     ax1.set_xticks(x); ax1.set_xticklabels(prompts, rotation=90, fontsize=7)
-    ax1.set_ylabel("Vendi / N  (per-sample uniqueness)")
-    ax1.set_title("Pillar S2 — cross-model CWE-pattern homogeneity\n(low = systemic-risk surface)")
+    ax1.set_ylabel("Exact (CWE, sink) pattern-match rate")
+    ax1.set_title("Pillar S2 — cross-model exact-pattern-match rate\n(red = systemic-risk surface)")
+    ax1.set_ylim(0, 1.05)
     ax1.legend(frameon=False, fontsize=7, loc="upper right")
 
-    em = [pp[p]["exact_pattern_match_rate"] for p in prompts]
-    ax2.bar(x, em, color="#d62728", alpha=0.85)
+    # ── Right panel: Vendi/N (vuln-only, three kernels) ──
+    ind = [(pp[p]["vuln_only"] or {}).get("vendi_pattern_indicator_norm", 0.0)
+           if pp[p].get("vuln_only") else 0.0 for p in prompts]
+    jac = [(pp[p]["vuln_only"] or {}).get("vendi_pattern_jaccard_norm", 0.0)
+           if pp[p].get("vuln_only") else 0.0 for p in prompts]
+    cwe = [(pp[p]["vuln_only"] or {}).get("vendi_cwe_only_norm", 0.0)
+           if pp[p].get("vuln_only") else 0.0 for p in prompts]
+    w2 = 0.27
+    ax2.bar(x - w2, ind, w2, color="#d62728", alpha=0.85, label="indicator")
+    ax2.bar(x,      jac, w2, color="#ff7f0e", alpha=0.85, label="Jaccard")
+    ax2.bar(x + w2, cwe, w2, color="#1f77b4", alpha=0.85, label="CWE-only")
     ax2.set_xticks(x); ax2.set_xticklabels(prompts, rotation=90, fontsize=7)
-    ax2.set_ylabel("Fraction of model pairs with EXACT pattern match")
-    ax2.set_title("Pillar S2 — exact pattern-match rate per prompt")
-    ax2.set_ylim(0, 1)
+    ax2.set_ylabel("Vendi / N (vulnerable samples only)")
+    ax2.set_title("Pillar S2 — pattern-Vendi/N over vulnerable samples\n(low = high cross-model homogeneity)")
+    ax2.legend(frameon=False, fontsize=7, loc="upper right")
 
     fig.tight_layout()
     fig.savefig(out_dir / "fig_pillar_s2_homogeneity.png")
@@ -883,19 +1016,22 @@ def write_summary(out_dir: Path, args, s1: dict, s2: dict, s3: dict,
         L.append("")
 
     L.append("## Pillar S2 — cross-model CWE-pattern homogeneity (NOVEL)\n")
-    L.append("Vendi/N over per-sample (CWE, sink) signatures, per prompt. "
-             "**Lower = stronger systemic-risk surface** (different LLMs producing the SAME exploitable pattern).\n")
-    L.append("| Prompt | n | Vendi/N (pattern indicator) | Vendi/N (Jaccard) | Vendi/N (CWE only) | exact-pattern-pair rate | top pattern |")
-    L.append("|---|---:|---:|---:|---:|---:|---|")
+    L.append("**Two columns** — `match_all` includes clean<->clean trivial "
+             "matches; `match_vuln` is the headline number (only over samples "
+             "that flagged a finding). High `match_vuln` = different LLMs "
+             "producing the SAME exploitable pattern.\n")
+    L.append("| Prompt | n | n_vuln | vuln_rate | match_all | **match_vuln** | Vendi/N (vuln, indicator) | top pattern |")
+    L.append("|---|---:|---:|---:|---:|---:|---:|---|")
     for pid, d in s2.get("per_prompt", {}).items():
         top = (json.dumps(d["top_patterns"][0]["signature"][:2])[:50]
                if d["top_patterns"] else "—")
-        L.append(f"| {pid} | {d['n']} | "
-                 f"{d['vendi_pattern_indicator_norm']:.3f} | "
-                 f"{d['vendi_pattern_jaccard_norm']:.3f} | "
-                 f"{d['vendi_cwe_only_norm']:.3f} | "
+        vo = d.get("vuln_only")
+        match_vuln = f"{vo['exact_pattern_match_rate']:.1%}" if vo else "n<2"
+        vendi_vuln = f"{vo['vendi_pattern_indicator_norm']:.3f}" if vo else "—"
+        L.append(f"| {pid} | {d['n']} | {d.get('n_vulnerable', 0)} | "
+                 f"{d.get('vuln_rate', 0):.1%} | "
                  f"{d['exact_pattern_match_rate']:.1%} | "
-                 f"{top} |")
+                 f"**{match_vuln}** | {vendi_vuln} | {top} |")
     L.append("")
 
     L.append("## Pillar S3 — slopsquatting / package hallucination\n")
@@ -955,8 +1091,45 @@ def parse_args() -> argparse.Namespace:
                    help="Hit PyPI for slopsquatting analysis (Pillar S3).")
     p.add_argument("--max-samples-per-prompt", type=int, default=None,
                    help="For dev runs: cap samples per prompt.")
+    p.add_argument("--from-cache", type=Path, default=None,
+                   help="Skip scan; reload scan_results from this JSONL "
+                        "cache (produced by a previous run as "
+                        "<out-dir>/scan_results.jsonl). Recomputes Pillars "
+                        "S1/S2/S3 with current code and writes new outputs.")
     p.add_argument("--dry-run", action="store_true")
     return p.parse_args()
+
+
+def _save_scan_cache(scan_results: list[dict], out_dir: Path) -> None:
+    """Persist per-sample scan results so subsequent --from-cache runs can
+    re-analyse without re-running the detectors. _code is preserved so
+    Pillar S3 (slopsquatting) can re-extract imports."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "scan_results.jsonl"
+    with open(path, "w", encoding="utf-8") as f:
+        for r in scan_results:
+            # pattern_signature is a tuple; JSON-encode as list.
+            rec = dict(r)
+            sig = rec.get("pattern_signature")
+            if isinstance(sig, tuple):
+                rec["pattern_signature"] = list(sig)
+            f.write(json.dumps(rec, default=str) + "\n")
+    print(f"  cached scan_results -> {path}")
+
+
+def _load_scan_cache(path: Path) -> list[dict]:
+    """Inverse of _save_scan_cache. Restores tuples for pattern_signature."""
+    out: list[dict] = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            rec = json.loads(line)
+            sig = rec.get("pattern_signature")
+            if isinstance(sig, list):
+                rec["pattern_signature"] = tuple(tuple(p) for p in sig)
+            out.append(rec)
+    return out
 
 
 def main():
@@ -974,7 +1147,33 @@ def main():
     print(f"  out_dir:          {args.out_dir}")
     print(f"  bandit:           {args.bandit}")
     print(f"  pypi_live_check:  {args.pypi_live_check}")
+    print(f"  from_cache:       {args.from_cache}")
     print()
+
+    # ── Re-analysis mode: skip the detector, reload cached scan results ──
+    if args.from_cache is not None:
+        if not args.from_cache.exists():
+            print(f"\nERROR: --from-cache file not found: {args.from_cache}")
+            sys.exit(2)
+        print(f"[from-cache] loading scan_results from {args.from_cache} ...")
+        scan_results = _load_scan_cache(args.from_cache)
+        print(f"  loaded {len(scan_results)} cached scan results")
+
+        print("\n[Pillar S1] per-model vulnerability rates ...")
+        s1 = pillar_s1(scan_results)
+        print("[Pillar S2] cross-model CWE-pattern homogeneity ...")
+        s2 = pillar_s2(scan_results)
+        print("[Pillar S3] slopsquatting analysis ...")
+        s3 = pillar_s3(scan_results, live_check=args.pypi_live_check,
+                       out_dir=args.out_dir)
+        for r in scan_results:
+            r.pop("_code", None)
+        print("\n[Summary] writing ...")
+        write_summary(args.out_dir, args, s1, s2, s3, scan_results)
+        print("[Figures] writing ...")
+        make_figures(s1, s2, s3, args.out_dir)
+        print(f"\nDone. Outputs in: {args.out_dir}")
+        return
 
     # Discover prompts if not specified
     if args.prompts is None:
@@ -1017,6 +1216,11 @@ def main():
     # Scan
     print("[scanning]")
     scan_results = scan_pool(rows, use_bandit=args.bandit)
+
+    # Persist scan results so a subsequent --from-cache run can re-analyse
+    # in seconds without re-invoking the detectors.
+    print("\n[caching scan_results]")
+    _save_scan_cache(scan_results, args.out_dir)
 
     # Pillars
     print("\n[Pillar S1] per-model vulnerability rates ...")
