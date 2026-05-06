@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"--- \\\\\\\\textbf{ count ---\")",
+      "Bash(python -c ' *)",
+      "Bash(echo \"--- \\\\\\\\textbf{ outside tables: paragraph context ---\")",
+      "Read(//c/c/Users/RushiHiray/Documents/JDS-Main/code_hive/**)",
+      "Bash(grep -vE \"&|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|tabular|table|^---\")",
+      "Bash(python)",
+      "Bash(python _check.py)",
+      "Bash(rm _check.py)"
+    ]
+  }
+}
