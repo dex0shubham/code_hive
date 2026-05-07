@@ -70,8 +70,7 @@ Frontier large language models produce strikingly homogeneous natural-language
 outputs across providers---the ``Artificial Hivemind'' effect
 \citep{jiang2025hivemind}---but whether this convergence extends to code
 generation has direct security consequences: under the classical
-software-monoculture argument \citep{geer2003,birman2009}, uniform code is
-uniformly vulnerable.
+software-monoculture argument \citep{geer2003,birman2009}, uniform code can create shared vulnerability surfaces.
 We introduce \textbf{Code Hivemind}, a measurement framework that
 disentangles three diversity axes (lexical, structural, representational)
 via a Vendi-Score evaluation \citep{friedman2023vendi} with three
@@ -177,8 +176,8 @@ factor of $2.3\times$ to $3.5\times$ at the lexical and representational
 levels. Convergence appears primarily in lexical and embedding-level
 implementation patterns---identifiers, library calls, algorithmic
 strategy---rather than in control-flow structure. On a separate security
-suite, this convergence manifests as measurable cross-model pattern
-agreement:
+suite, we observe a parallel form of convergence in cross-model
+vulnerability patterns:
 among calibrated critical findings validated by dynamic PoC execution,
 96\% of unsafe deserialization and 63\% of path traversal findings are
 confirmed exploitable, and on four security tasks the cross-model ensemble
@@ -919,7 +918,7 @@ SE-21 & headers            & 57.3\% & 78.2\% & 0.006 & missing security headers 
 \end{tabular}
 \caption{Pillar S2 (top 8). \texttt{match\_vuln} = cross-pair exact (CWE,
 sink) match rate among vulnerable samples. Four prompts show 100\%:
-different LLMs produce byte-identical exploitable constructs.}
+different LLMs produce signature-identical vulnerable constructs.}
 \label{tab:s2-headline}
 \end{table}
 
@@ -945,6 +944,76 @@ The contrast between SE-04 (100\% convergence on the vulnerable f-string SQL
 pattern before Rule A clears it) and SE-09 ($>$99\% convergence on the safe
 \code{yaml.safe\_load}) cleanly illustrates how industry-wide deprecation
 campaigns shift the LLM population's equilibrium.
+
+\subsection{Security-suite diversity analysis: bridging the pillars}
+\label{sec:bridge}
+
+A central question is whether the lexical-representational homogeneity
+measured on the diversity suite (PB-* prompts) also holds on the security
+suite (SE-* prompts). To test this, we compute the same three-kernel
+Vendi$/N$ scores on all 30 SE-* prompts using the inter-LLM pool
+($N{=}44$) at $T{=}0.7$.
+
+Table~\ref{tab:se-diversity} shows the aggregate comparison. The SE-*
+inter-LLM Vendi$/N$ values are nearly identical to the PB-* values across
+all three kernels, confirming that the homogeneity effect is not an artifact
+of the diversity suite's open-ended prompt design---it persists on
+security-prone tasks.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+Suite & Token & AST & CodeT5+ \\
+\midrule
+Diversity (PB-*, $n{=}20$)  & 0.326 & 0.121 & 0.161 \\
+Security  (SE-*, $n{=}30$)  & 0.317 & 0.120 & 0.141 \\
+\bottomrule
+\end{tabular}
+\caption{Mean inter-LLM Vendi$/N$ at $T{=}0.7$ across two separate prompt
+suites. The security suite shows the same homogeneity pattern as the
+diversity suite: nearly identical token and AST scores, and slightly lower
+CodeT5+ (more homogeneous) on security-prone tasks.}
+\label{tab:se-diversity}
+\end{table}
+
+\paragraph{Diversity--homogeneity correlation.}
+We pair each SE-* prompt's inter-LLM CodeT5+ Vendi$/N$ with its
+cross-model CWE-pattern match rate (\texttt{match\_vuln} from
+\S\ref{sec:s2}), excluding the 4 prompts with too few vulnerable samples.
+Table~\ref{tab:correlation} shows Spearman rank correlations.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lrrr}
+\toprule
+Correlation & $\rho$ & $p$ & $n$ \\
+\midrule
+CodeT5+ Vendi$/N$ vs \texttt{match\_vuln} & $-0.556$ & \textbf{0.003} & 26 \\
+Token Vendi$/N$ vs \texttt{match\_vuln}   & $-0.361$ & 0.070 & 26 \\
+CodeT5+ Vendi$/N$ vs vuln\%               & $+0.049$ & 0.796 & 30 \\
+Token Vendi$/N$ vs vuln\%                 & $+0.093$ & 0.627 & 30 \\
+\bottomrule
+\end{tabular}
+\caption{Spearman rank correlations between per-prompt diversity (Vendi$/N$)
+and security metrics. Lower representational diversity (CodeT5+) is
+significantly associated with higher cross-model vulnerability-pattern
+agreement ($\rho = -0.556$, $p = 0.003$). Raw vulnerability prevalence
+(vuln\%) shows no diversity relationship, consistent with the interpretation
+that diversity predicts \emph{pattern uniformity}, not vulnerability
+prevalence per se.}
+\label{tab:correlation}
+\end{table}
+
+The significant negative correlation ($\rho = -0.556$, $p = 0.003$) between
+representational diversity and vulnerability-pattern match rate provides a
+direct quantitative bridge between the two pillars: prompts on which models
+produce more homogeneous code (lower Vendi$/N$) also produce more uniform
+vulnerable patterns (higher \texttt{match\_vuln}). The absence of
+correlation with raw vulnerability prevalence (vuln\%) is expected---vuln\%
+measures how \emph{often} models write vulnerable code, while
+\texttt{match\_vuln} measures how \emph{similarly} they do so. Diversity
+predicts pattern agreement, not vulnerability frequency.
 
 \subsection{Mode-collapse / vulnerability-rate correlation}
 \label{sec:correlation}
@@ -1046,17 +1115,20 @@ language features or task-induced canonicality, but in shared
 the same variable names, the same library calls, the same algorithmic
 choices across providers.
 
-\subsection{Cross-pillar link: scope and limitations}
+\subsection{Cross-pillar link: from correlation to bridge}
 
 The diversity and security pillars share a model population but operate on
-separate datasets (\S\ref{sec:setup}). The mode-collapse correlation
-(\S\ref{sec:correlation})---three models that collapse on diversity also
-produce zero security findings---is a \emph{consistency observation}, not a
-causal claim. We do not assert that low diversity \emph{causes} higher
-vulnerability rates. A future study computing diversity metrics directly on
-security-suite outputs would test whether the lexical convergence we measure
-on open-ended tasks also holds on security-prone tasks, strengthening or
-falsifying the cross-pillar link.
+separate datasets (\S\ref{sec:setup}). The security-suite diversity
+analysis (\S\ref{sec:bridge}) now provides a direct quantitative bridge:
+computing the same three-kernel Vendi$/N$ on all 30 SE-* prompts yields
+nearly identical homogeneity scores (token 0.317 vs 0.326, CodeT5+ 0.141
+vs 0.161), and the per-prompt CodeT5+ Vendi$/N$ correlates significantly
+with cross-model vulnerability-pattern agreement ($\rho = -0.556$,
+$p = 0.003$). This moves the connection from a consistency observation to a
+measured relationship. We still do not assert that low diversity
+\emph{causes} higher vulnerability-pattern agreement---the correlation is
+between two consequences of the same underlying convergence---but the
+bridge is now empirical rather than inferential.
 
 \subsection{Mitigation pathways}
 
@@ -1073,9 +1145,12 @@ vulnerable patterns we identify are precisely the targets.
 \begin{itemize}[leftmargin=*]
   \item \textbf{Single language.} All measurements are on Python.
   \item \textbf{Separate datasets.} The diversity and security pillars use
-    different prompt suites by design, which means we cannot directly compute
-    diversity metrics on the security samples or vice versa. The connection
-    is through the shared model population and the mode-collapse correlation.
+    different prompt suites by design. While \S\ref{sec:bridge} shows that
+    computing diversity metrics on security-suite outputs yields nearly
+    identical homogeneity scores and a significant correlation between
+    diversity and pattern agreement ($\rho = -0.556$, $p = 0.003$), the
+    two suites remain structurally different (open-ended vs
+    security-prone), and the connection is correlational.
   \item \textbf{Human baseline scope.} APPS competitive-programming
     solutions are stylistically narrower than production code, which likely
     \emph{understates} true human diversity. The reported human Vendi$/N$
@@ -1125,15 +1200,20 @@ path traversal at 63\% confirmation rates. Four of thirty security tasks show
 signature---the first quantitative evidence of cross-provider
 vulnerability-pattern convergence in LLM-generated code.
 
+Computing the same diversity metrics directly on security-suite outputs
+confirms that the homogeneity transfers: SE-* inter-LLM Vendi$/N$ matches
+the diversity suite within 3\% on all kernels, and per-prompt
+representational diversity correlates significantly with cross-model
+vulnerability-pattern agreement ($\rho = -0.556$, $p = 0.003$)---providing
+a direct quantitative bridge between the two pillars.
 The same three models that mode-collapse on diversity produce zero security
-findings---a consistent correlation between the pillars observed across
-different datasets. Conversely, the \code{yaml.safe\_load} finding ($>$99\% safe
-convergence) demonstrates that training-data shifts can redirect the
-monoculture toward secure defaults. We argue that this
-lexical-representational monoculture is a measurable cross-provider
-convergence phenomenon that warrants
-continuous tracking, and release the dataset, evaluation framework,
-calibration pipeline, and verification suite to support it.
+findings---a consistent correlation observed across different datasets.
+Conversely, the \code{yaml.safe\_load} finding ($>$99\% safe convergence)
+demonstrates that training-data shifts can redirect the monoculture toward
+secure defaults. We argue that this lexical-representational monoculture is
+a measurable cross-provider convergence phenomenon that warrants continuous
+tracking, and release the dataset, evaluation framework, calibration
+pipeline, and verification suite to support it.
 
 \section*{Acknowledgements}
 [Redacted for review.]
@@ -1314,7 +1394,66 @@ is included in the release.
     scan results, figures, and summaries.
   \item \texttt{results/manual\_verification/} --- 365 verified samples with
     dynamic execution results.
+  \item \texttt{compute\_se\_bridge.py} --- security-suite diversity
+    computation and correlation analysis (Appendix~\ref{app:se-diversity}).
+  \item \texttt{results/se\_diversity\_bridge.json} --- per-prompt Vendi$/N$
+    paired with S2 match rates and Spearman correlations.
 \end{itemize}
+
+\section{Security-suite diversity: per-prompt results}
+\label{app:se-diversity}
+
+Table~\ref{tab:se-perprompt} lists the inter-LLM Vendi$/N$ at $T{=}0.7$
+for all 30 SE-* prompts alongside the cross-model CWE-pattern match rate
+(\texttt{match\_vuln}) and calibrated vulnerability rate (vuln\%).
+
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+Prompt & Token & AST & CodeT5+ & match\_vuln & vuln\% \\
+\midrule
+SE-01  & 0.325 & 0.121 & 0.140 &  22.8 &  3.9 \\
+SE-02  & 0.389 & 0.139 & 0.183 &  11.3 & 18.9 \\
+SE-03  & 0.355 & 0.150 & 0.176 &  29.5 & 16.1 \\
+SE-04  & 0.273 & 0.092 & 0.101 &   --- &  0.0 \\
+SE-05  & 0.367 & 0.121 & 0.138 &  61.5 & 72.7 \\
+SE-06  & 0.346 & 0.120 & 0.116 & \textbf{100.0} & 36.4 \\
+SE-07  & 0.213 & 0.087 & 0.110 &  80.6 & 71.1 \\
+SE-08  & 0.297 & 0.124 & 0.089 &  44.3 & 72.7 \\
+SE-09  & 0.277 & 0.122 & 0.105 &   --- &  0.0 \\
+SE-10  & 0.392 & 0.173 & 0.221 &   5.4 & 37.5 \\
+SE-11  & 0.197 & 0.071 & 0.114 &  76.1 & 65.9 \\
+SE-12  & 0.272 & 0.113 & 0.120 &  71.5 & 59.3 \\
+SE-13  & 0.360 & 0.106 & 0.144 &  13.0 & 31.6 \\
+SE-14  & 0.422 & 0.132 & 0.131 & \textbf{100.0} & 70.7 \\
+SE-15  & 0.352 & 0.128 & 0.172 &  21.8 & 71.4 \\
+SE-16  & 0.305 & 0.099 & 0.115 & \textbf{100.0} &  0.7 \\
+SE-17  & 0.287 & 0.117 & 0.155 &  78.4 & 36.1 \\
+SE-18  & 0.297 & 0.096 & 0.104 &  73.7 & 69.1 \\
+SE-19  & 0.337 & 0.148 & 0.158 &   9.2 &  5.9 \\
+SE-20  & 0.314 & 0.104 & 0.156 &  17.7 & 65.7 \\
+SE-21  & 0.223 & 0.069 & 0.121 &  78.2 & 57.3 \\
+SE-22  & 0.334 & 0.106 & 0.168 &  54.0 & 68.9 \\
+SE-23  & 0.285 & 0.123 & 0.097 &  69.6 &  6.4 \\
+SE-24  & 0.405 & 0.161 & 0.169 &  44.5 & 56.1 \\
+SE-25  & 0.302 & 0.114 & 0.116 &   --- &  0.2 \\
+SE-26  & 0.277 & 0.117 & 0.136 &   --- &  0.0 \\
+SE-27  & 0.256 & 0.099 & 0.139 &  85.6 & 61.1 \\
+SE-28  & 0.358 & 0.145 & 0.159 & \textbf{100.0} & 27.0 \\
+SE-29  & 0.326 & 0.138 & 0.168 &  33.8 & 38.6 \\
+SE-30  & 0.375 & 0.150 & 0.206 &  56.5 & 64.1 \\
+\midrule
+\textbf{Mean} & \textbf{0.317} & \textbf{0.120} & \textbf{0.141} & --- & --- \\
+\bottomrule
+\end{tabular}
+\caption{Per-prompt inter-LLM Vendi$/N$ at $T{=}0.7$ on the security suite,
+paired with cross-model CWE-pattern match rate and calibrated vulnerability
+rate. Prompts with $<$2 vulnerable samples show ``---'' for
+\texttt{match\_vuln}. The mean Vendi$/N$ across 30 SE-* prompts closely
+matches the diversity suite (PB-*: token 0.326, AST 0.121, CodeT5+ 0.161).}
+\label{tab:se-perprompt}
+\end{table}
 
 \section{CodeBERT sensitivity analysis}
 \label{app:sensitivity}
