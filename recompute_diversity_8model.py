@@ -84,11 +84,22 @@ def main():
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     ap.add_argument("--embedder", default="codet5p",
                     choices=["codet5p", "codebert", "tfidf"])
-    ap.add_argument("--center-embeddings", default="kernel",
-                    choices=["kernel", "embedding", "none"],
-                    help="Match the main paper's pipeline (default: kernel)")
+    ap.add_argument(
+        "--center-embeddings",
+        default="center",
+        choices=["none", "center", "abtt", "kernel"],
+        help="Passed through to proof_homogeneity_v2 (column-mean centering, "
+             "ABTT, or none). Legacy alias 'kernel' means 'center'. "
+             "Default: center (matches codet5p_centered-style runs).",
+    )
     ap.add_argument("--keep-filtered", action="store_true")
     args = ap.parse_args()
+
+    center = args.center_embeddings
+    if center == "kernel":
+        print("  [warn] --center-embeddings kernel is deprecated; "
+              "using center (same as proof_homogeneity_v2 --center-embeddings center)")
+        center = "center"
 
     src = Path(args.raw_dir)
     if not src.exists():
@@ -112,7 +123,7 @@ def main():
         "--out-dir", str(out_dir / "v2_run"),
         "--embedder", args.embedder,
         "--device", args.device,
-        "--center-embeddings", args.center_embeddings,
+        "--center-embeddings", center,
     ]
     if args.suite == "PB":
         cmd += ["--human-dir", args.human_dir]
