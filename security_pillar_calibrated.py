@@ -44,10 +44,15 @@ all metrics and write a parallel ``summary.json``/``summary.md``/figures.
 Usage
 -----
     python security_pillar_calibrated.py \\
-        --scan-results results/proof_security/sec_<TS>/scan_results.jsonl \\
-        --out-dir      results/proof_security/sec_calibrated_<TS>/
+        --scan-results results/proof_security/sec_se30_t0_t07_bandit_pypi/scan_results.jsonl \\
+        --out-dir      results/proof_security/sec_se30_t0_t07_bandit_pypi_calibrated/
 
-Falls back to ``--from-cache`` semantics: no network, no detector re-run.
+Falls back to ``--from-cache`` semantics for detectors: no CodeShield re-run.
+
+Pillar S3 (slopsquatting) does **not** depend on calibrated findings — only on
+import lists from ``_code``. By default we **reuse** ``pillar_s3`` from
+``<scan-results-dir>/summary.json`` when sample counts match (same run as the
+JSONL). Use ``--pypi-live-check`` only if you want to hit PyPI again.
 """
 
 from __future__ import annotations
@@ -56,6 +61,7 @@ import argparse
 import ast
 import json
 import re
+import shutil
 import sys
 import time
 from collections import Counter, defaultdict
@@ -491,6 +497,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--diff-only", action="store_true",
                    help="Print the rule-fire counts and per-prompt vuln-rate "
                         "deltas only; do not run pillars or write outputs.")
+    p.add_argument("--pypi-live-check", action="store_true",
+                   help="Re-run live PyPI slopsquatting (slow). Default: reuse "
+                        "pillar_s3 from the directory containing scan_results.jsonl "
+                        "when summary.json is present and n_samples matches.")
     return p.parse_args()
 
 
@@ -563,8 +573,44 @@ def main():
     s1 = pillar_s1(calibrated)
     print("[Pillar S2] cross-model CWE-pattern homogeneity ...")
     s2 = pillar_s2(calibrated)
-    print("[Pillar S3] slopsquatting analysis (cached PyPI lookups, no live re-check) ...")
-    s3 = pillar_s3(calibrated, live_check=False, out_dir=args.out_dir)
+
+    adj_summary_path = args.scan_results.parent / "summary.json"
+    adj_summary: dict | None = None
+    if adj_summary_path.is_file():
+        try:
+            adj_summary = json.loads(
+                adj_summary_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"  [warn] could not read {adj_summary_path}: {e}")
+
+    s3 = None
+    pillar_s3_source = "fallback_live_check_false"
+    if args.pypi_live_check:
+        print("[Pillar S3] live PyPI slopsquatting (--pypi-live-check) ...")
+        s3 = pillar_s3(calibrated, live_check=True, out_dir=args.out_dir)
+        pillar_s3_source = "live_pypi"
+    elif adj_summary is not None:
+        n_adj = adj_summary.get("pillar_s1", {}).get("n_samples")
+        ps3 = adj_summary.get("pillar_s3")
+        if n_adj == len(calibrated) and isinstance(ps3, dict):
+            s3 = ps3
+            pillar_s3_source = "reused_adjacent_summary_json"
+            print("[Pillar S3] reusing pillar_s3 from adjacent summary.json "
+                  f"({adj_summary_path}) — imports are unchanged by calibration.")
+            slop_src = args.scan_results.parent / "slop_findings.jsonl"
+            if slop_src.is_file():
+                shutil.copy2(slop_src, args.out_dir / "slop_findings.jsonl")
+                print(f"  copied slop_findings.jsonl -> {args.out_dir}")
+        else:
+            print(f"  [warn] adjacent summary.json mismatch "
+                  f"(n_samples {n_adj} vs calibrated {len(calibrated)}); "
+                  "will fall back to pillar_s3(live_check=False).")
+
+    if s3 is None:
+        print("[Pillar S3] running pillar_s3(live_check=False) ...")
+        print("  [hint] Use adjacent summary.json from the same security_pillar "
+              "run, or pass --pypi-live-check.")
+        s3 = pillar_s3(calibrated, live_check=False, out_dir=args.out_dir)
 
     # Save calibrated cache
     print("\n[Cache] writing calibrated scan_results.jsonl ...")
@@ -575,11 +621,19 @@ def main():
         r.pop("_code", None)
 
     print("[Summary] writing ...")
-    # Build a lightweight argparse-Namespace shim for write_summary
+    cfg = (adj_summary or {}).get("config", {})
+    if pillar_s3_source == "live_pypi":
+        shim_pypi = True
+    elif pillar_s3_source == "reused_adjacent_summary_json":
+        shim_pypi = bool(cfg.get("pypi_live_check", False))
+    else:
+        shim_pypi = False
     shim = argparse.Namespace(
         prompts=sorted({r["prompt_id"] for r in calibrated}),
-        temperatures=None, raw_dir=args.scan_results.parent,
-        bandit=False, pypi_live_check=False,
+        temperatures=cfg.get("temperatures"),
+        raw_dir=Path(cfg["raw_dir"]) if cfg.get("raw_dir") else args.scan_results.parent,
+        bandit=cfg.get("use_bandit", False),
+        pypi_live_check=shim_pypi,
     )
     write_summary(args.out_dir, shim, s1, s2, s3, calibrated)
 
@@ -598,6 +652,7 @@ def main():
         "raw_vuln_count_by_prompt": dict(raw_vuln_by_prompt),
         "calibrated_vuln_count_by_prompt": dict(cal_vuln_by_prompt),
         "n_per_prompt": dict(raw_total_by_prompt),
+        "pillar_s3_source": pillar_s3_source,
     }
     audit_path.write_text(json.dumps(audit_data, indent=2), encoding="utf-8")
     print(f"  wrote {audit_path}")
