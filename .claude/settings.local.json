@@ -8,7 +8,23 @@
       "Bash(grep -vE \"&|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|tabular|table|^---\")",
       "Bash(python)",
       "Bash(python _check.py)",
-      "Bash(rm _check.py)"
+      "Bash(rm _check.py)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "WebSearch",
+      "WebFetch(domain:cwe.mitre.org)",
+      "WebFetch(domain:codeql.github.com)",
+      "WebFetch(domain:bandit.readthedocs.io)",
+      "WebFetch(domain:cheatsheetseries.owasp.org)",
+      "WebFetch(domain:github.com)",
+      "Bash(python audit_sql_injection.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Downloads\\\\latest_final_result-20260506T195609Z-3-001\\\\latest_final_result\\\\_x\\\\sec_se30_t0_t07_bandit_pypi\\\\scan_results.jsonl\" --out-dir test_out --limit 0)",
+      "Bash(python verify_command_injection.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Downloads\\\\latest_final_result-20260506T195609Z-3-001\\\\latest_final_result\\\\_x\\\\sec_se30_t0_t07_bandit_pypi\\\\scan_results.jsonl\" --out-dir test_out --limit 80)",
+      "Bash(python verify_unsafe_eval.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Downloads\\\\latest_final_result-20260506T195609Z-3-001\\\\latest_final_result\\\\_x\\\\sec_se30_t0_t07_bandit_pypi\\\\scan_results.jsonl\" --out-dir test_out --limit 60)",
+      "Bash(python audit_mass_assignment.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Documents\\\\JDS-Main\\\\code_hive\\\\results\\\\proof_security\\\\sec_calibrated_v2\\\\scan_results.jsonl\" --out-dir test_out --limit 60)",
+      "Bash(python audit_path_traversal.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Documents\\\\JDS-Main\\\\code_hive\\\\results\\\\proof_security\\\\sec_calibrated_v2\\\\scan_results.jsonl\" --out-dir test_out --limit 60)",
+      "Bash(python verify_unsafe_deserialization.py --scan-results \"C:\\\\Users\\\\RushiHiray\\\\Downloads\\\\latest_final_result-20260506T195609Z-3-001\\\\latest_final_result\\\\_x\\\\sec_se30_t0_t07_bandit_pypi\\\\scan_results.jsonl\" --out-dir test_out --limit 50)",
+      "Bash(python report_manual_stats.py --inputs test_out --out-dir test_out/report)",
+      "Bash(rm -rf test_out)",
+      "Bash(rd /s /q test_out)"
     ]
   }
 }

@@ -90,7 +90,7 @@ _PARAM_PATTERNS = [
 # Rule A also covers the case where the query string is bound to a name
 # *before* execute() is called.
 _PARAM_PRECOMPILED = [
-    re.compile(r"['\"][^'\"]*\?[^'\"]*['\"]\s*$",            re.I),
+    re.compile(r"['\"][^'\"]*\?[^'\"]*['\"]\s*$",            re.I | re.M),
     re.compile(r"['\"][^'\"]*%s[^'\"]*['\"]",                re.I),
     re.compile(r"['\"][^'\"]*%\([^)]+\)s[^'\"]*['\"]",       re.I),
     re.compile(r"['\"][^'\"]*:[A-Za-z_]\w*[^'\"]*['\"]",     re.I),
@@ -101,20 +101,42 @@ def _line_uses_parameterised_sql(code: str, line_num: int, window: int = 3) -> b
     """True if the matched line (and a small +/- window) constitutes a
     parameterised execute() call. We look at line_num and a few lines around
     it because some samples build the query string on a previous line and
-    pass it by name to execute()."""
+    pass it by name to execute().
+
+    Patch 1 (v2): when the local window does not match, fall back to a
+    whole-code check for the common pattern where a variable is assigned a
+    SQL string containing placeholders and later passed to execute(var, params).
+    This catches  ``query = "SELECT ... WHERE name LIKE ?"``  followed by
+    ``cursor.execute(query, ("%"+kw+"%",))``  even when they are far apart.
+    """
     if line_num <= 0:
-        return False
-    lines = code.split("\n")
-    lo = max(0, line_num - 1 - window)
-    hi = min(len(lines), line_num - 1 + window + 1)
-    snippet = "\n".join(lines[lo:hi])
-    if any(p.search(snippet) for p in _PARAM_PATTERNS):
-        return True
-    if any(p.search(snippet) for p in _PARAM_PRECOMPILED):
-        # A query-string-with-placeholders bound earlier counts only if
-        # there is also a tuple/dict second arg to execute() somewhere.
-        if re.search(r"execute\s*\(\s*\w+\s*,\s*[\(\[\{]", snippet):
+        # No line info — fall through to whole-code check below.
+        pass
+    else:
+        lines = code.split("\n")
+        lo = max(0, line_num - 1 - window)
+        hi = min(len(lines), line_num - 1 + window + 1)
+        snippet = "\n".join(lines[lo:hi])
+        if any(p.search(snippet) for p in _PARAM_PATTERNS):
             return True
+        if any(p.search(snippet) for p in _PARAM_PRECOMPILED):
+            if re.search(r"execute\s*\(\s*\w+\s*,\s*[\(\[\{]", snippet):
+                return True
+
+    # ── Whole-code fallback (Patch 1) ──────────────────────────────
+    # If the *entire* code contains a SQL string with placeholders AND a
+    # separate execute(var, tuple/list/dict) call, the query is parameterized
+    # regardless of where each piece lives.
+    has_placeholder_string = any(p.search(code) for p in _PARAM_PRECOMPILED)
+    has_execute_with_params = bool(
+        re.search(r"execute\s*\(\s*\w+\s*,\s*[\(\[\{]", code)
+    )
+    # Also catch execute("...?...", ...) anywhere in the code
+    has_inline_param = any(p.search(code) for p in _PARAM_PATTERNS)
+    if has_inline_param:
+        return True
+    if has_placeholder_string and has_execute_with_params:
+        return True
     return False
 
 
@@ -180,9 +202,99 @@ def _is_password_fp(finding: dict, code: str) -> bool:
 
 # Rule D: SE-28 mass-assignment AST detector.
 
+def _setattr_is_allowlisted(for_node: ast.For) -> bool:
+    """Return True if every ``setattr(...)`` call inside *for_node* is guarded
+    by an ``if <key> in <allowlist>`` check (the standard mass-assignment
+    mitigation).  We also accept ``if <key> not in <denylist>`` and explicit
+    attribute-name checks like ``if <key> == "email"``.
+
+    Patch 2: prevents false positives on code like::
+
+        allowed = {"username", "email"}
+        for k, v in data.items():
+            if k in allowed:
+                setattr(user, k, v)
+    """
+    # Collect the for-loop's target variable name(s)
+    target_names: set[str] = set()
+    if isinstance(for_node.target, ast.Name):
+        target_names.add(for_node.target.id)
+    elif isinstance(for_node.target, ast.Tuple):
+        for elt in for_node.target.elts:
+            if isinstance(elt, ast.Name):
+                target_names.add(elt.id)
+    if not target_names:
+        return False
+
+    def _test_has_membership_guard(test_node: ast.expr) -> bool:
+        """Return True if *test_node* (an If condition) contains an
+        ``<loop_var> in <collection>`` / ``not in`` / ``== <literal>``
+        comparison.  Handles both bare ``Compare`` and ``BoolOp(And, [...])``.
+
+        NOTE: ``hasattr(obj, key)`` is intentionally NOT accepted.
+        ``hasattr`` checks attribute existence, but privileged fields
+        like ``is_admin``/``role``/``permissions`` also exist on the
+        object, so ``hasattr`` provides zero mass-assignment protection.
+        Only explicit allowlist/denylist membership checks count.
+        """
+        compare_nodes: list[ast.Compare] = []
+        if isinstance(test_node, ast.Compare):
+            compare_nodes.append(test_node)
+        elif isinstance(test_node, ast.BoolOp):
+            for v in test_node.values:
+                if isinstance(v, ast.Compare):
+                    compare_nodes.append(v)
+        for cmp in compare_nodes:
+            left = cmp.left
+            if isinstance(left, ast.Name) and left.id in target_names:
+                for op in cmp.ops:
+                    if isinstance(op, (ast.In, ast.NotIn, ast.Eq)):
+                        return True
+        return False
+
+    # Walk direct body statements looking for setattr calls
+    for stmt in ast.walk(for_node):
+        if not isinstance(stmt, ast.Call):
+            continue
+        fn = stmt.func
+        if not (isinstance(fn, ast.Name) and fn.id == "setattr"):
+            continue
+        # Walk the for-body to check if this setattr is inside an If
+        # with a membership guard on the loop variable.
+        guarded = False
+        for if_node in ast.walk(for_node):
+            if not isinstance(if_node, ast.If):
+                continue
+            if _test_has_membership_guard(if_node.test):
+                # Verify setattr is actually inside this If body
+                for child in ast.walk(if_node):
+                    if child is stmt:
+                        guarded = True
+                        break
+            if guarded:
+                break
+        if not guarded:
+            return False  # at least one unguarded setattr
+    return True  # all setattr calls are guarded
+
+
+# Also check for allowlist via regex as a fast pre-filter (catches variable
+# names and comments that the AST walk might miss).
+_ALLOWLIST_RE = re.compile(
+    r"allowed_?fields|editable_?fields|PERMITTED_?FIELDS|WHITELIST|"
+    r"updateable_?fields|safe_?fields|valid_?fields|ALLOWED_?ATTRS",
+    re.I,
+)
+
+
 def _detect_mass_assignment(code: str) -> list[dict]:
     """Return a synthetic CWE-915 finding if the sample contains
-    ``for ... in <name>.items(): setattr(<obj>, <key>, <value>)``."""
+    ``for ... in <name>.items(): setattr(<obj>, <key>, <value>)``
+    WITHOUT an allowlist guard.
+
+    Patch 2: skip if the setattr is guarded by ``if key in allowed_set``
+    (AST check) or the code contains an allowlist variable name (regex
+    fallback)."""
     try:
         tree = ast.parse(code)
     except (SyntaxError, ValueError):
@@ -204,18 +316,38 @@ def _detect_mass_assignment(code: str) -> list[dict]:
         if not is_items_call:
             continue
         # Look for setattr(...) inside the loop body
+        has_setattr = False
         for sub in ast.walk(node):
             if isinstance(sub, ast.Call):
                 fn = sub.func
                 if isinstance(fn, ast.Name) and fn.id == "setattr":
-                    return [{
-                        "cwe": "CWE-915",
-                        "sink": "setattr(<obj>, <user_key>, <user_val>) in payload-items loop",
-                        "severity": cvss_for_cwe("CWE-915", default=6.5),
-                        "line": getattr(node, "lineno", 0),
-                        "description": "Mass assignment: setattr loop over user-supplied payload allows writing privileged fields (e.g. is_admin=True)",
-                        "detector": "calibration-D",
-                    }]
+                    has_setattr = True
+                    break
+        if not has_setattr:
+            continue
+        # Patch 2: skip if allowlist-guarded
+        if _setattr_is_allowlisted(node):
+            continue
+        # Regex fallback: if an allowlist-named variable is defined AND
+        # referenced in an ``if <key> in <that_var>`` guard inside the loop,
+        # treat it as guarded.  We require the allowlist name to appear in
+        # the loop body itself, not just anywhere in the file.
+        loop_src_lines = code.split("\n")[
+            getattr(node, "lineno", 1) - 1:
+            getattr(node, "end_lineno", getattr(node, "lineno", 1))
+        ]
+        loop_src = "\n".join(loop_src_lines)
+        if _ALLOWLIST_RE.search(loop_src):
+            if re.search(r"\bif\s+\w+\s+in\s+", loop_src):
+                continue
+        return [{
+            "cwe": "CWE-915",
+            "sink": "setattr(<obj>, <user_key>, <user_val>) in payload-items loop",
+            "severity": cvss_for_cwe("CWE-915", default=6.5),
+            "line": getattr(node, "lineno", 0),
+            "description": "Mass assignment: setattr loop over user-supplied payload allows writing privileged fields (e.g. is_admin=True)",
+            "detector": "calibration-D",
+        }]
     return []
 
 
@@ -226,8 +358,17 @@ _TRAVERSAL_SAFE_RE = re.compile(
     r"\.resolve\s*\(\s*\)\s*\.\s*relative_to\b|"
     r"startswith\s*\(\s*os\.path\.realpath|"
     r"normpath\s*\([^)]*\).*startswith|"
-    r"\b\.\.\b\s+(in|not in)\b",
-    re.I,
+    r"\b\.\.\b\s+(in|not in)\b|"
+    # Patch 3: abspath() + startswith() combination  (e.g.
+    #   file_path = os.path.abspath(os.path.join(base, fn))
+    #   if not file_path.startswith(base_dir + os.sep): raise ...
+    # )
+    r"\babspath\b[^)]*\).*\bstartswith\s*\(|"
+    # Patch 3: basename() or secure_filename() strip the directory entirely,
+    # which prevents traversal by construction.
+    r"\bos\.path\.basename\s*\(|"
+    r"\bsecure_filename\s*\(",
+    re.I | re.S,
 )
 _PATH_JOIN_RE = re.compile(r"os\.path\.join\s*\(", re.I)
 _OPEN_CALL_RE = re.compile(r"\bopen\s*\(", re.I)
