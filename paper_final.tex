@@ -86,8 +86,8 @@ token $n$-gram kernel and 0.15 under a CodeT5+ neural embedding kernel,
 versus 0.63 and 0.52 for human authors---roughly half the effective
 diversity, a $2.3\times$ to $3.5\times$ collapse ($p<10^{-3}$).
 At the AST structural level, LLM and human distributions are statistically
-indistinguishable: convergence is in \emph{what} models write, not how they
-organize control flow.
+indistinguishable: convergence appears primarily in lexical and
+embedding-level implementation patterns, not in control-flow structure.
 On a \textbf{separate suite of 30 security-eliciting prompts} (13,199
 samples), we apply a five-rule calibration overlay grounded in OWASP/CWE
 standards, then validate 365 stratified findings via dynamic
@@ -119,12 +119,13 @@ mode. The premise has been studied at the level of operating systems, network
 protocols, and cloud infrastructure, but never at the level of
 \emph{generated source code} itself.
 
-That level now matters. Large language models have rapidly displaced human
-authors as the dominant source of new application code. If frontier LLMs
-converge on a single coding ``voice''---the same identifiers, the same
-library calls, the same algorithmic strategies---then the resulting code base
-inherits the failure mode the monoculture literature identified two decades
-ago, at a finer-grained substrate than has previously been studied.
+That level now matters. Large language models are increasingly used in
+software development workflows, and their share of new application code is
+growing rapidly. If frontier LLMs converge on a narrow set of implementation
+patterns---the same identifiers, the same library calls, the same
+algorithmic strategies---then the resulting code base inherits the failure
+mode the monoculture literature identified two decades ago, at a
+finer-grained substrate than has previously been studied.
 
 The ``Artificial Hivemind'' effect of \citet{jiang2025hivemind} provides a
 baseline expectation: 70+ frontier LLMs converge on consensus open-ended
@@ -173,10 +174,11 @@ The framework produces a refined picture:
 \itshape
 Frontier LLMs converge with humans at the structural level but diverge by a
 factor of $2.3\times$ to $3.5\times$ at the lexical and representational
-levels. They write code that is shaped like human code but says the same
-things---same identifiers, same library calls, same algorithmic
-strategy---across providers and temperatures. On a separate security suite,
-the same convergence manifests as measurable cross-model pattern agreement:
+levels. Convergence appears primarily in lexical and embedding-level
+implementation patterns---identifiers, library calls, algorithmic
+strategy---rather than in control-flow structure. On a separate security
+suite, this convergence manifests as measurable cross-model pattern
+agreement:
 among calibrated critical findings validated by dynamic PoC execution,
 96\% of unsafe deserialization and 63\% of path traversal findings are
 confirmed exploitable, and on four security tasks the cross-model ensemble
@@ -404,19 +406,30 @@ conflicting requirements:
     (1,000 total). Diversity measurement \emph{requires} prompts with high
     solution space; security-focused prompts are too constrained.
   \item \textbf{Security suite (SE-01..30)} --- 30 prompts targeting
-    security-prone domains, designed according to a systematic methodology:
-    each prompt maps to one or more entries in the \textbf{OWASP Top~10
-    (2021)} or the \textbf{CWE Top-25 (2023)}, covering authentication
-    (CWE-287/89), cryptography (CWE-259/327), subprocess handling (CWE-78),
-    deserialization (CWE-502), eval sinks (CWE-94), file I/O (CWE-22),
-    mass assignment (CWE-915), XML parsing (CWE-611), and additional
-    categories (CSRF, SSRF, SSTI, TOCTOU, open redirect, missing
-    authorization). All prompts are phrased \emph{neutrally} (no security
-    cues, no ``make this secure'' framing) so the model's default behavior
-    determines whether the safe or unsafe pattern is chosen. Prompts were
-    not piloted or tuned against model outputs; they were designed from CWE
-    definitions, then run once. 13,199 LLM samples (20 per model-prompt
-    cell, $T\in\{0.0,0.7\}$).
+    security-prone domains. The suite was constructed as follows:
+    \begin{enumerate}[leftmargin=1.5em,label=(\alph*)]
+      \item \textbf{Coverage-driven selection.} Each prompt maps to one or
+        more entries in the \textbf{OWASP Top~10 (2021)} or the
+        \textbf{CWE Top-25 (2023)}. The 30 prompts collectively cover 15 of
+        the 25 CWE Top-25 entries and 8 of 10 OWASP Top~10 categories,
+        spanning authentication (CWE-287/89), cryptography (CWE-259/327),
+        subprocess handling (CWE-78), deserialization (CWE-502), eval sinks
+        (CWE-94), file I/O (CWE-22), mass assignment (CWE-915), XML parsing
+        (CWE-611), and additional categories (CSRF, SSRF, SSTI, TOCTOU, open
+        redirect, missing authorization).
+      \item \textbf{Neutral phrasing.} All prompts are phrased as ordinary
+        engineering requests (e.g., ``write a function that processes user
+        profile updates'') with no security cues, no ``make this secure''
+        framing, and no hints toward either the safe or unsafe pattern. This
+        deliberate design choice ensures that the model's default behavior
+        determines whether the safe or unsafe implementation is chosen.
+      \item \textbf{No tuning against outputs.} Prompts were derived from
+        CWE definitions and OWASP category descriptions, then run once
+        against all models. They were not piloted, iterated, or tuned against
+        model outputs to avoid overfitting the suite to any particular
+        model's failure modes.
+    \end{enumerate}
+    13,199 LLM samples (20 per model-prompt cell, $T\in\{0.0,0.7\}$).
 \end{itemize}
 
 The two suites are connected by the same model population. We observe a
@@ -961,10 +974,11 @@ that this is a correlational observation, not a causal claim
 
 \subsection{The structural-vs-lexical asymmetry}
 
-The central finding is that code-LLM convergence is \emph{not} that models
-write the same shape of program---their AST distributions match humans'. It
-is that they write the same \emph{content}: same identifiers, same library
-calls, same algorithmic strategies. This precisely matches what the
+The central finding is that code-LLM convergence is \emph{not} structural
+---the AST distributions of LLM-generated code match those of human
+authors. Rather, convergence appears primarily in lexical and
+embedding-level implementation patterns: identifiers, library calls, and
+algorithmic strategies. This precisely matches what the
 software-monoculture literature identifies as the dangerous mode:
 \textbf{uniform components and dependencies are the convergence surface,
 not uniform control flow.} Standard code-quality tools (linters, AST-based
@@ -1000,21 +1014,37 @@ appear with the same sink across model families, the cross-provider
 convergence is concrete: a single exploit targeting the shared pattern
 would affect code from every major LLM family on the affected task.
 
-\subsection{Convention versus monoculture}
+\subsection{Why this is not merely canonical Python style}
 
 A natural objection is that the observed convergence simply reflects
-``good Python style'' rather than a problematic monoculture. The null-pool
-analysis provides a direct test: null-pool samples are drawn from
-\emph{different prompts} (maximally unrelated tasks) yet still share Python
-conventions. If convergence were merely convention, inter-LLM scores should
-approach null-pool scores. They do not: the null pool scores 0.853 on the
-token kernel versus 0.326 for the inter-LLM pool at $T{=}0.7$---a
-$2.6\times$ gap. On the CodeT5+ kernel the gap is $3.5\times$ (0.567 vs
-0.161). The inter-LLM pool is far more homogeneous than Python convention
-alone predicts. The convergence is not in shared language features but in
-shared \emph{solution strategies}: the same variable names, the same library
-calls, the same algorithmic choices across providers---precisely the
-substrate that the monoculture argument identifies as the risk surface.
+``good Python style'' or canonical implementations rather than a meaningful
+monoculture. We address this with two independent controls.
+
+\paragraph{Control 1: Null pool.}
+Null-pool samples are drawn from \emph{different prompts} (maximally
+unrelated tasks) yet still share all Python conventions (PEP~8, standard
+library idioms, common identifier patterns). If convergence were merely
+convention, inter-LLM scores should approach null-pool scores. They do not:
+the null pool scores 0.853 on the token kernel versus 0.326 for the
+inter-LLM pool at $T{=}0.7$---a $2.6\times$ gap. On the CodeT5+ kernel the
+gap is $3.5\times$ (0.567 vs 0.161). The inter-LLM pool is far more
+homogeneous than Python convention alone predicts.
+
+\paragraph{Control 2: Human baseline under identical constraints.}
+The strongest test is the human pool: 50 independent human authors solving
+\emph{the same prompts}, in \emph{the same language} (Python), under
+\emph{the same correctness constraints}. If low diversity were an inherent
+property of the tasks---canonical implementations naturally reducing solution
+variety---then humans operating under the same constraints would show
+comparable homogeneity. They do not: humans achieve token Vendi$/N$ of 0.631
+versus 0.326 for the inter-LLM ensemble ($1.9\times$ gap), and CodeT5+
+Vendi$/N$ of 0.523 versus 0.161 ($3.2\times$ gap). The paired bootstrap
+confirms these differences at $p<0.001$ across all 20 prompts
+(Table~\ref{tab:pillar2}). The convergence is therefore not in shared
+language features or task-induced canonicality, but in shared
+\emph{solution strategies} that go beyond what the task constraints require:
+the same variable names, the same library calls, the same algorithmic
+choices across providers.
 
 \subsection{Cross-pillar link: scope and limitations}
 
